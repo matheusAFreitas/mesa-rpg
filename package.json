@@ -1,0 +1,12 @@
+{
+  "name": "mesa-do-mestre",
+  "version": "1.0.0",
+  "description": "RPG Game Master tool - Multiverso Caótico",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mesa do Mestre</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<nav id="sidebar">
+  <div class="logo">
+    <h1>Mesa do Mestre</h1>
+  </div>
+  <div class="nav-item active" data-s="dashboard">🗺️ Painel</div>
+  <div class="nav-item" data-s="pj">⚔️ PJs</div>
+  <div class="nav-item" data-s="npc">🧑 NPCs</div>
+  <div class="nav-item" data-s="creature">☠️ Bestiário</div>
+  <div class="nav-item" data-s="location">📍 Locais</div>
+  <div class="nav-item" data-s="session">📖 Sessões</div>
+  <div class="nav-item" data-s="combat">🔥 Combate</div>
+  <div class="nav-item" data-s="dice">🎲 Dados</div>
+  <div class="nav-sep"></div>
+  <div class="nav-item" data-s="map-world">🌐 Mapa do Mundo</div>
+  <div class="nav-item" data-s="map-dungeon">🏰 Dungeon</div>
+  <div class="nav-sep"></div>
+  <div class="nav-item" data-s="universes">🌌 Universos</div>
+</nav>
+
+<main id="main">
+
+  <!-- PAINEL -->
+  <section id="s-dashboard" class="section active">
+    <div class="page-header">
+      <h2>Painel</h2>
+      <span id="dash-date" style="font-size:12px;color:var(--text2)"></span>
+    </div>
+    <div class="dash-grid">
+      <div>
+        <div class="widget">
+          <h3>📝 Anotações Rápidas</h3>
+          <textarea class="qnotes" id="quick-notes" placeholder="Anotações para a sessão atual..."></textarea>
+        </div>
+        <div class="widget" style="margin-top:14px;">
+          <h3>⚡ Última Rolagem</h3>
+          <div id="dash-last-roll" style="font-size:13px;color:var(--text2)">Nenhuma rolagem ainda.</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div class="widget">
+          <h3>🎲 Rolagem Rápida</h3>
+          <div class="quick-dice" id="quick-dice-btns"></div>
+        </div>
+        <div class="widget">
+          <h3>📊 Resumo</h3>
+          <div id="dash-summary"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PJs -->
+  <section id="s-pj" class="section">
+    <div class="page-header">
+      <h2>Jogadores (PJs)</h2>
+      <button class="btn btn-primary" onclick="App.openModal('pj')">+ Adicionar PJ</button>
+    </div>
+    <div class="filter-bar"><input type="text" id="search-pj" placeholder="Buscar..." oninput="Cards.render('pj')"></div>
+    <div class="cards-grid" id="cards-pj"></div>
+  </section>
+
+  <!-- NPCs -->
+  <section id="s-npc" class="section">
+    <div class="page-header">
+      <h2>NPCs</h2>
+      <button class="btn btn-primary" onclick="App.openModal('npc')">+ Adicionar NPC</button>
+    </div>
+    <div class="filter-bar"><input type="text" id="search-npc" placeholder="Buscar por nome, facção, universo..." oninput="Cards.render('npc')"></div>
+    <div class="cards-grid" id="cards-npc"></div>
+  </section>
+
+  <!-- BESTIÁRIO -->
+  <section id="s-creature" class="section">
+    <div class="page-header">
+      <h2>Bestiário</h2>
+      <button class="btn btn-primary" onclick="App.openModal('creature')">+ Adicionar Criatura</button>
+    </div>
+    <div class="filter-bar"><input type="text" id="search-creature" placeholder="Buscar..." oninput="Cards.render('creature')"></div>
+    <div class="cards-grid" id="cards-creature"></div>
+  </section>
+
+  <!-- LOCAIS -->
+  <section id="s-location" class="section">
+    <div class="page-header">
+      <h2>Locais</h2>
+      <button class="btn btn-primary" onclick="App.openModal('location')">+ Adicionar Local</button>
+    </div>
+    <div class="filter-bar"><input type="text" id="search-location" placeholder="Buscar..." oninput="Cards.render('location')"></div>
+    <div class="cards-grid" id="cards-location"></div>
+  </section>
+
+  <!-- SESSÕES -->
+  <section id="s-session" class="section">
+    <div class="page-header">
+      <h2>Registro de Sessões</h2>
+      <button class="btn btn-primary" onclick="App.openModal('session')">+ Nova Sessão</button>
+    </div>
+    <div class="session-list" id="session-list"></div>
+  </section>
+
+  <!-- COMBATE -->
+  <section id="s-combat" class="section">
+    <div class="page-header">
+      <h2>Gerenciador de Combate</h2>
+      <button class="btn btn-primary" onclick="App.openModal('combatant')">+ Adicionar Combatente</button>
+    </div>
+    <div class="combat-ctrl" id="combat-ctrl"></div>
+    <div class="combat-list" id="combat-list"></div>
+  </section>
+
+  <!-- DADOS -->
+  <section id="s-dice" class="section">
+    <div class="page-header"><h2>Rolar Dados</h2></div>
+    <div style="max-width:580px;margin:0 auto;">
+      <div class="dice-grid" id="dice-btns"></div>
+      <div class="widget" style="margin-bottom:14px;">
+        <h3>🎯 Rolagem Customizada</h3>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <input type="number" id="dc-qty" value="1" min="1" max="20" class="fc" style="width:65px;">
+          <span style="color:var(--text2)">d</span>
+          <input type="number" id="dc-sides" value="6" min="2" max="1000" class="fc" style="width:75px;">
+          <span style="color:var(--text2)">+</span>
+          <input type="number" id="dc-mod" value="0" class="fc" style="width:65px;">
+          <button class="btn btn-primary" onclick="Dice.rollCustom()">Rolar</button>
+        </div>
+      </div>
+      <div class="dice-result">
+        <div class="dice-num" id="dice-num">—</div>
+        <div class="dice-detail" id="dice-detail">Clique em um dado para rolar</div>
+      </div>
+      <div class="widget" style="margin-top:14px;">
+        <h3>📜 Histórico</h3>
+        <div id="dice-history" style="font-size:12px;color:var(--text2);max-height:140px;overflow-y:auto;"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAPA DO MUNDO -->
+  <section id="s-map-world" class="section">
+    <div class="page-header">
+      <h2>Mapa do Mundo</h2>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button class="btn btn-secondary btn-sm wm-tool active" data-tool="select" onclick="WorldMap.setTool('select')">↖ Mover</button>
+        <button class="btn btn-secondary btn-sm wm-tool" data-tool="connect" onclick="WorldMap.setTool('connect')">🔗 Conectar</button>
+        <button class="btn btn-secondary btn-sm wm-tool" data-tool="deledge" onclick="WorldMap.setTool('deledge')">✂ Remover Conexão</button>
+        <button class="btn btn-secondary btn-sm" onclick="WorldMap.zoomIn()">＋</button>
+        <button class="btn btn-secondary btn-sm" onclick="WorldMap.zoomOut()">－</button>
+        <button class="btn btn-secondary btn-sm" onclick="WorldMap.resetView()">⌂</button>
+      </div>
+    </div>
+    <div class="map-wrap">
+      <canvas id="wm-canvas"></canvas>
+      <div id="wm-panel" class="map-info-panel" style="display:none;"></div>
+      <div id="wm-hint" class="map-hint">Sem locais cadastrados. Adicione locais na seção <strong>Locais</strong>.</div>
+    </div>
+  </section>
+
+  <!-- MAPA DE DUNGEON -->
+  <section id="s-map-dungeon" class="section">
+    <div class="page-header">
+      <h2>Mapa de Dungeon</h2>
+      <button class="btn btn-primary" onclick="DungeonMap.newDungeon()">+ Nova Dungeon</button>
+    </div>
+    <div class="dungeon-layout">
+      <div class="dungeon-sidebar">
+        <div class="widget">
+          <h3>📋 Dungeons</h3>
+          <div id="dungeon-list"></div>
+        </div>
+        <div class="widget" id="tile-panel" style="display:none;">
+          <h3>🧱 Tiles</h3>
+          <div class="tile-palette" id="tile-palette"></div>
+        </div>
+        <div class="widget" id="token-panel" style="display:none;">
+          <h3>🪆 Tokens</h3>
+          <p style="font-size:11px;color:var(--text2);margin-bottom:8px;">Clique para selecionar, depois clique na grade para colocar.</p>
+          <div id="token-list"></div>
+        </div>
+        <div class="widget" id="dungeon-settings-panel" style="display:none;">
+          <h3>⚙ Grade</h3>
+          <div class="fg">
+            <label>Largura</label>
+            <input type="number" id="dg-width" class="fc" min="5" max="60" value="20">
+          </div>
+          <div class="fg">
+            <label>Altura</label>
+            <input type="number" id="dg-height" class="fc" min="5" max="60" value="20">
+          </div>
+          <button class="btn btn-secondary btn-sm" style="width:100%;margin-top:4px;" onclick="DungeonMap.resizeGrid()">Aplicar</button>
+          <button class="btn btn-danger btn-sm" style="width:100%;margin-top:6px;" onclick="DungeonMap.deleteDungeon()">🗑 Excluir Dungeon</button>
+        </div>
+      </div>
+      <div class="dungeon-canvas-wrap">
+        <canvas id="dg-canvas"></canvas>
+        <div id="dg-hint" class="map-hint">Crie ou selecione uma dungeon no painel à esquerda.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- UNIVERSOS -->
+  <section id="s-universes" class="section">
+    <div class="page-header">
+      <h2>Universos</h2>
+      <button class="btn btn-primary" onclick="Universes.openAdd()">+ Adicionar Universo</button>
+    </div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:18px;">
+      Universos aparecem como opção em PJs, NPCs, Criaturas e Locais. Cada um tem uma cor que é usada nas tags e no Mapa do Mundo.
+    </p>
+    <div class="cards-grid" id="universe-cards"></div>
+  </section>
+
+</main>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay" onclick="App.closeModalOutside(event)">
+  <div class="modal" id="modal-body"></div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/main.js"></script>
+<script src="/js/dashboard.js"></script>
+<script src="/js/cards.js"></script>
+<script src="/js/combat.js"></script>
+<script src="/js/sessions.js"></script>
+<script src="/js/dice.js"></script>
+<script src="/js/map-world.js"></script>
+<script src="/js/map-dungeon.js"></script>
+<script src="/js/universes.js"></script>
+</body>
+</html>
