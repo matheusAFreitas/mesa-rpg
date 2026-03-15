@@ -1,4 +1,26 @@
+const BASE_STATS = ['FOR', 'DES', 'CON', 'INT', 'SAB', 'CAR'];
+
 const Cards = {
+  statRowHTML(k = '', v = '', fixed = false) {
+    const keyInput = fixed
+      ? `<input type="text" class="fc stat-key" value="${k}" readonly style="color:var(--text2);cursor:default;">`
+      : `<input type="text" class="fc stat-key" placeholder="NOME" value="${k}" maxlength="10">`;
+    const removeBtn = fixed
+      ? `<span style="width:26px;flex-shrink:0;"></span>`
+      : `<button type="button" class="btn-icon-sm" onclick="this.closest('.stats-row').remove()" title="Remover">✕</button>`;
+    return `<div class="stats-row">
+      ${keyInput}
+      <input type="number" class="fc stat-val" placeholder="0" value="${v}">
+      ${removeBtn}
+    </div>`;
+  },
+
+  addStatRow() {
+    document.getElementById('stats-editor').insertAdjacentHTML('beforeend', this.statRowHTML());
+    const rows = document.querySelectorAll('#stats-editor .stats-row');
+    rows[rows.length - 1].querySelector('.stat-key').focus();
+  },
+
   render(type) {
     const q = (document.getElementById('search-' + type) || {}).value || '';
     const items = App.db[type].filter(i => !q || JSON.stringify(i).toLowerCase().includes(q.toLowerCase()));
@@ -105,7 +127,14 @@ const Cards = {
         <div class="fg"><label>XP Atual</label><input type="number" class="fc" id="f-xp" value="${i?.xp||0}" min="0"></div>
         <div class="fg"><label>XP p/ Próx. Nível</label><input type="number" class="fc" id="f-xp_next" value="${i?.xp_next||0}" min="0" placeholder="0 = sem barra"></div>
       </div>
-      <div class="fg"><label>Atributos (ex: FOR:10, DES:8, INT:6)</label><input class="fc" id="f-stats" value="${i?.stats?Object.entries(i.stats).map(([k,v])=>k+':'+v).join(', '):''}"></div>
+      <div class="fg">
+        <label>Atributos</label>
+        <div id="stats-editor" class="stats-editor">
+          ${BASE_STATS.map(k => Cards.statRowHTML(k, i?.stats?.[k] || '', true)).join('')}
+          ${i?.stats ? Object.entries(i.stats).filter(([k])=>!BASE_STATS.includes(k)).map(([k,v])=>Cards.statRowHTML(k,v)).join('') : ''}
+        </div>
+        <button type="button" class="btn btn-secondary btn-sm" style="margin-top:6px" onclick="Cards.addStatRow()">+ Atributo Custom</button>
+      </div>
       <div class="fg"><label>Anotações (visível ao jogador)</label><textarea class="fc" id="f-notes">${i?.notes||''}</textarea></div>
       <div class="fg"><label>Notas do Mestre (privado — jogador não vê)</label><textarea class="fc" id="f-gm_notes" style="border-color:#5a3a1a">${i?.gm_notes||''}</textarea></div>
       <div class="fg"><label>PIN do Jogador (opcional — protege a ficha na visão de jogador)</label><input class="fc" id="f-pin" placeholder="Deixe em branco para sem PIN" value="${i?.pin||''}"></div>`;
@@ -164,7 +193,16 @@ const Cards = {
   },
 
   readForm(type) {
-    if (type === 'pj') { const pin = gv('f-pin').trim(); return { name:gv('f-name'), class:gv('f-class'), universe:gv('f-universe'), hp:+gv('f-hp')||0, hp_max:+gv('f-hp_max')||0, level:+gv('f-level')||1, xp:+gv('f-xp')||0, xp_next:+gv('f-xp_next')||0, stats:parseStats(gv('f-stats')), notes:gv('f-notes'), gm_notes:gv('f-gm_notes'), ...(pin ? {pin} : {pin:''}) }; }
+    if (type === 'pj') {
+      const pin = gv('f-pin').trim();
+      const stats = {};
+      document.querySelectorAll('#stats-editor .stats-row').forEach(row => {
+        const k = row.querySelector('.stat-key').value.trim().toUpperCase();
+        const v = row.querySelector('.stat-val').value.trim();
+        if (k && v) stats[k] = v;
+      });
+      return { name:gv('f-name'), class:gv('f-class'), universe:gv('f-universe'), hp:+gv('f-hp')||0, hp_max:+gv('f-hp_max')||0, level:+gv('f-level')||1, xp:+gv('f-xp')||0, xp_next:+gv('f-xp_next')||0, stats, notes:gv('f-notes'), gm_notes:gv('f-gm_notes'), ...(pin ? {pin} : {pin:''}) };
+    }
     if (type === 'npc') return { name:gv('f-name'), faction:gv('f-faction'), universe:gv('f-universe'), role:gv('f-role'), attitude:gv('f-attitude'), notes:gv('f-notes') };
     if (type === 'creature') return { name:gv('f-name'), universe:gv('f-universe'), threat:gv('f-threat'), hp:gv('f-hp'), armor:gv('f-armor'), damage:gv('f-damage'), abilities:gv('f-abilities') };
     if (type === 'location') return { name:gv('f-name'), universe:gv('f-universe'), status:gv('f-status'), description:gv('f-description'), connections:gv('f-connections') };

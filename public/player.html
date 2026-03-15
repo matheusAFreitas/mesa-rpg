@@ -127,6 +127,13 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 .pending-box .char-label{font-size:18px;font-weight:700;color:var(--accent);margin:12px 0;}
 .pending-pulse{width:12px;height:12px;border-radius:50%;background:var(--warn);display:inline-block;margin-right:6px;animation:pulse 1.4s ease-in-out infinite;}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.85)}}
+/* ---- STATS EDITOR (create form) ---- */
+.stats-editor{display:flex;flex-direction:column;gap:6px;}
+.stats-row{display:flex;gap:6px;align-items:center;}
+.stats-row .stat-key{width:90px;flex-shrink:0;padding:6px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:13px;text-transform:uppercase;}
+.stats-row .stat-key:focus{outline:none;border-color:var(--accent);}
+.stats-row .stat-val{width:72px;flex-shrink:0;padding:6px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:13px;}
+.stats-row .stat-val:focus{outline:none;border-color:var(--accent);}
 /* ---- MAPA ---- */
 #wm-wrap{position:relative;width:100%;height:100%;}
 #wm-canvas{display:block;width:100%;height:100%;}
@@ -173,8 +180,9 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
       </div>
     </div>
     <div>
-      <label>Atributos (ex: FOR:10, DES:8, INT:6)</label>
-      <input id="cr-stats" type="text" placeholder="FOR:10, DES:8, INT:6">
+      <label>Atributos</label>
+      <div id="cr-stats-editor" class="stats-editor"></div>
+      <button type="button" class="btn btn-secondary btn-sm" style="margin-top:6px" onclick="PlayerCreate.addStatRow()">+ Atributo Custom</button>
     </div>
     <div>
       <label>Background / Notas</label>
@@ -355,10 +363,10 @@ const Player = {
 
   showCreate() {
     document.getElementById('screen-select').style.display = 'none';
-    // Populate universe select
     const sel = document.getElementById('cr-universe');
     sel.innerHTML = (this.db.universes || []).map(u => `<option value="${u.name}">${u.name}</option>`).join('');
     document.getElementById('screen-create').style.display = 'block';
+    PlayerCreate.init();
     document.getElementById('cr-name').focus();
   },
 
@@ -370,14 +378,11 @@ const Player = {
   async submitRequest() {
     const name = document.getElementById('cr-name').value.trim();
     if (!name) { alert('Nome é obrigatório.'); return; }
-    const statsRaw = document.getElementById('cr-stats').value;
-    const stats = {};
-    statsRaw.split(',').forEach(p => { const [k,v] = (p||'').trim().split(':'); if(k&&v) stats[k.trim().toUpperCase()] = v.trim(); });
     const payload = {
       name,
       class:    document.getElementById('cr-class').value.trim(),
       universe: document.getElementById('cr-universe').value,
-      stats,
+      stats:    PlayerCreate.readStats(),
       notes:    document.getElementById('cr-notes').value.trim(),
     };
     const res = await fetch('/api/player/request', {
@@ -908,6 +913,44 @@ const PMap = {
     document.getElementById('wm-panel').style.display = 'none';
     this.selected = null;
     this._dirty = true;
+  }
+};
+
+// =========================================================
+// Player Create — stats editor helper
+// =========================================================
+const BASE_STATS = ['FOR', 'DES', 'CON', 'INT', 'SAB', 'CAR'];
+
+const PlayerCreate = {
+  init() {
+    const editor = document.getElementById('cr-stats-editor');
+    if (!editor) return;
+    editor.innerHTML = BASE_STATS.map(k => `
+      <div class="stats-row">
+        <input type="text" class="stat-key" value="${k}" readonly style="color:var(--text2);cursor:default;">
+        <input type="number" class="stat-val" placeholder="0">
+        <span style="width:28px;flex-shrink:0;"></span>
+      </div>`).join('');
+  },
+  addStatRow() {
+    const editor = document.getElementById('cr-stats-editor');
+    editor.insertAdjacentHTML('beforeend', `
+      <div class="stats-row">
+        <input type="text"   class="stat-key" placeholder="NOME" maxlength="10">
+        <input type="number" class="stat-val" placeholder="0">
+        <button type="button" class="btn-icon" onclick="this.closest('.stats-row').remove()" title="Remover">✕</button>
+      </div>`);
+    const rows = editor.querySelectorAll('.stats-row');
+    rows[rows.length - 1].querySelector('.stat-key').focus();
+  },
+  readStats() {
+    const stats = {};
+    document.querySelectorAll('#cr-stats-editor .stats-row').forEach(row => {
+      const k = row.querySelector('.stat-key').value.trim().toUpperCase();
+      const v = row.querySelector('.stat-val').value.trim();
+      if (k && v) stats[k] = v;
+    });
+    return stats;
   }
 };
 

@@ -65,6 +65,13 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 textarea.fc{min-height:75px;resize:vertical;}
 .fr2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .fr3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.stats-editor{display:flex;flex-direction:column;gap:6px;}
+.stats-row{display:flex;gap:6px;align-items:center;}
+.stats-row .stat-key{width:90px;text-transform:uppercase;flex-shrink:0;}
+.stats-row .stat-val{width:72px;flex-shrink:0;}
+.stats-row .stat-desc{flex:1;}
+.btn-icon-sm{padding:3px 7px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:12px;color:var(--text2);transition:opacity .15s;line-height:1;}
+.btn-icon-sm:hover{opacity:.75;}
 .modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;}
 
 /* ---- COMBAT ---- */
