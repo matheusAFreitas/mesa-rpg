@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mesa do Mestre</title>
+<style>
+:root{--bg:#0d0d0d;--bg2:#161616;--bg3:#1e1e1e;--border:#2a2a2a;--accent:#c0392b;--text:#e0e0e0;--text2:#888;--ok:#27ae60;--danger:#e74c3c;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;}
+
+.landing{text-align:center;width:100%;max-width:480px;padding:40px 24px;}
+.landing h1{font-size:28px;letter-spacing:4px;text-transform:uppercase;color:var(--accent);margin-bottom:6px;}
+.landing p{color:var(--text2);font-size:13px;margin-bottom:48px;}
+
+.cards{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
+.role-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:32px 28px;cursor:pointer;transition:border-color .15s,transform .12s;width:190px;text-decoration:none;color:var(--text);}
+.role-card:hover{border-color:var(--accent);transform:translateY(-3px);}
+.role-card .icon{font-size:36px;margin-bottom:12px;}
+.role-card .label{font-size:15px;font-weight:600;margin-bottom:4px;}
+.role-card .sub{font-size:12px;color:var(--text2);}
+
+/* Modal */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;align-items:center;justify-content:center;}
+.overlay.open{display:flex;}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:28px;width:320px;}
+.modal h3{font-size:15px;margin-bottom:6px;}
+.modal p{font-size:12px;color:var(--text2);margin-bottom:18px;line-height:1.5;}
+.modal input{width:100%;padding:9px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:14px;letter-spacing:2px;margin-bottom:6px;}
+.modal input:focus{outline:none;border-color:var(--accent);}
+.error{color:var(--danger);font-size:12px;min-height:16px;margin-bottom:10px;}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end;}
+.btn{padding:7px 16px;border:none;border-radius:4px;cursor:pointer;font-size:13px;font-weight:500;transition:opacity .15s;}
+.btn:hover{opacity:.82;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-secondary{background:var(--bg3);color:var(--text);border:1px solid var(--border);}
+</style>
+</head>
+<body>
+
+<div class="landing">
+  <h1>Mesa do Mestre</h1>
+  <p>Sistema de gerenciamento para RPG de mesa</p>
+  <div class="cards">
+    <div class="role-card" onclick="GM.open()">
+      <div class="icon">🎲</div>
+      <div class="label">Mestre</div>
+      <div class="sub">Gerenciar campanha</div>
+    </div>
+    <a class="role-card" href="/jogador">
+      <div class="icon">⚔️</div>
+      <div class="label">Jogador</div>
+      <div class="sub">Ver minha ficha</div>
+    </a>
+  </div>
+</div>
+
+<!-- Modal de senha do Mestre -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3 id="modal-title">Acesso do Mestre</h3>
+    <p id="modal-desc">Digite a senha para continuar.</p>
+    <input id="pw-input" type="password" placeholder="Senha..." autocomplete="off">
+    <div class="error" id="pw-error"></div>
+    <div class="modal-btns">
+      <button class="btn btn-secondary" onclick="GM.close()">Cancelar</button>
+      <button class="btn btn-primary" id="pw-btn" onclick="GM.submit()">Entrar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const GM = {
+  mode: 'verify', // 'verify' | 'setup'
+
+  async open() {
+    const res = await fetch('/api/gm/auth');
+    const { hasPassword } = await res.json();
+    this.mode = hasPassword ? 'verify' : 'setup';
+
+    document.getElementById('modal-title').textContent = hasPassword ? 'Acesso do Mestre' : 'Criar Senha do Mestre';
+    document.getElementById('modal-desc').textContent = hasPassword
+      ? 'Digite a senha para acessar a área do Mestre.'
+      : 'Nenhuma senha configurada. Defina uma senha para proteger a área do Mestre.';
+    document.getElementById('pw-btn').textContent = hasPassword ? 'Entrar' : 'Definir Senha';
+    document.getElementById('pw-input').value = '';
+    document.getElementById('pw-error').textContent = '';
+    document.getElementById('overlay').classList.add('open');
+    setTimeout(() => document.getElementById('pw-input').focus(), 50);
+  },
+
+  close() {
+    document.getElementById('overlay').classList.remove('open');
+  },
+
+  async submit() {
+    const pw = document.getElementById('pw-input').value;
+    if (!pw.trim()) {
+      document.getElementById('pw-error').textContent = 'Senha não pode ser vazia.';
+      return;
+    }
+    const res = await fetch('/api/gm/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pw })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      window.location.href = '/mestre';
+    } else {
+      document.getElementById('pw-error').textContent = 'Senha incorreta.';
+      document.getElementById('pw-input').value = '';
+      document.getElementById('pw-input').focus();
+    }
+  }
+};
+
+document.getElementById('pw-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') GM.submit();
+  if (e.key === 'Escape') GM.close();
+});
+</script>
+</body>
+</html>

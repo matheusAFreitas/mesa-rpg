@@ -40,6 +40,7 @@ const App = {
     }
     this.setupNav();
     this.render('dashboard');
+    this.startPolling();
     document.addEventListener('input', e => {
       if (e.target.id === 'quick-notes') { this.db.notes = e.target.value; this.save(); }
     });
@@ -47,7 +48,25 @@ const App = {
 
   save() {
     clearTimeout(this._saveTimer);
-    this._saveTimer = setTimeout(() => Api.save(this.db), 600);
+    this._saveTimer = setTimeout(() => {
+      Api.save(this.db);
+      this._saveTimer = null;
+    }, 600);
+  },
+
+  startPolling() {
+    setInterval(async () => {
+      // Skip if GM has a modal open or has unsaved changes in progress
+      if (document.getElementById('overlay').classList.contains('open')) return;
+      if (this._saveTimer) return;
+
+      const fresh = await Api.load();
+      if (JSON.stringify(fresh) === JSON.stringify(this.db)) return;
+
+      this.db = fresh;
+      const active = document.querySelector('.nav-item.active');
+      if (active) this.render(active.dataset.s);
+    }, 8000);
   },
 
   setupNav() {

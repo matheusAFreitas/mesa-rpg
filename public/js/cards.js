@@ -23,13 +23,18 @@ const Cards = {
       const col = pct > 50 ? 'var(--ok)' : pct > 25 ? 'var(--warn)' : 'var(--danger)';
       const statsHTML = i.stats ? Object.entries(i.stats).filter(([,v])=>v)
         .map(([k,v]) => `<div class="stat"><div class="stat-label">${k}</div><div class="stat-value">${v}</div></div>`).join('') : '';
+      const lvl = i.level || 1;
+      const xp = i.xp || 0; const xpNext = i.xp_next || 0;
+      const xpPct = xpNext > 0 ? Math.min(100, xp / xpNext * 100) : 0;
       return `<div class="card">
         <div class="card-header"><div>
-          <div class="card-title">${i.name}</div>
+          <div class="card-title">${i.name} <span style="font-size:11px;color:var(--accent);font-weight:600;">Nv.${lvl}</span></div>
           <span class="tag" style="${uStyle}">${i.universe||'—'}</span>${i.class?`<span class="tag">${i.class}</span>`:''}
         </div>${acts}</div>
         ${i.hp_max>0?`<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text2)"><span>HP</span><span>${i.hp}/${i.hp_max}</span></div>
         <div class="hp-bar"><div class="hp-fill" style="width:${pct}%;background:${col}"></div></div>`:''}
+        ${xpNext>0?`<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-top:4px"><span>XP</span><span>${xp}/${xpNext}</span></div>
+        <div class="hp-bar"><div class="hp-fill" style="width:${xpPct}%;background:var(--accent)"></div></div>`:''}
         <div class="stat-block">${statsHTML}</div>
         ${i.notes?`<div class="card-notes">${i.notes}</div>`:''}
       </div>`;
@@ -95,8 +100,15 @@ const Cards = {
         <div class="fg"><label>HP Atual</label><input type="number" class="fc" id="f-hp" value="${i?.hp||''}"></div>
         <div class="fg"><label>HP Máximo</label><input type="number" class="fc" id="f-hp_max" value="${i?.hp_max||''}"></div>
       </div>
+      <div class="fr3">
+        <div class="fg"><label>Nível</label><input type="number" class="fc" id="f-level" value="${i?.level||1}" min="1"></div>
+        <div class="fg"><label>XP Atual</label><input type="number" class="fc" id="f-xp" value="${i?.xp||0}" min="0"></div>
+        <div class="fg"><label>XP p/ Próx. Nível</label><input type="number" class="fc" id="f-xp_next" value="${i?.xp_next||0}" min="0" placeholder="0 = sem barra"></div>
+      </div>
       <div class="fg"><label>Atributos (ex: FOR:10, DES:8, INT:6)</label><input class="fc" id="f-stats" value="${i?.stats?Object.entries(i.stats).map(([k,v])=>k+':'+v).join(', '):''}"></div>
-      <div class="fg"><label>Anotações</label><textarea class="fc" id="f-notes">${i?.notes||''}</textarea></div>`;
+      <div class="fg"><label>Anotações (visível ao jogador)</label><textarea class="fc" id="f-notes">${i?.notes||''}</textarea></div>
+      <div class="fg"><label>Notas do Mestre (privado — jogador não vê)</label><textarea class="fc" id="f-gm_notes" style="border-color:#5a3a1a">${i?.gm_notes||''}</textarea></div>
+      <div class="fg"><label>PIN do Jogador (opcional — protege a ficha na visão de jogador)</label><input class="fc" id="f-pin" placeholder="Deixe em branco para sem PIN" value="${i?.pin||''}"></div>`;
 
     if (type === 'npc') return `<h3>${i?'Editar':'Novo'} NPC</h3>
       <div class="fg"><label>Nome</label><input class="fc" id="f-name" value="${i?.name||''}"></div>
@@ -152,7 +164,7 @@ const Cards = {
   },
 
   readForm(type) {
-    if (type === 'pj') return { name:gv('f-name'), class:gv('f-class'), universe:gv('f-universe'), hp:+gv('f-hp')||0, hp_max:+gv('f-hp_max')||0, stats:parseStats(gv('f-stats')), notes:gv('f-notes') };
+    if (type === 'pj') { const pin = gv('f-pin').trim(); return { name:gv('f-name'), class:gv('f-class'), universe:gv('f-universe'), hp:+gv('f-hp')||0, hp_max:+gv('f-hp_max')||0, level:+gv('f-level')||1, xp:+gv('f-xp')||0, xp_next:+gv('f-xp_next')||0, stats:parseStats(gv('f-stats')), notes:gv('f-notes'), gm_notes:gv('f-gm_notes'), ...(pin ? {pin} : {pin:''}) }; }
     if (type === 'npc') return { name:gv('f-name'), faction:gv('f-faction'), universe:gv('f-universe'), role:gv('f-role'), attitude:gv('f-attitude'), notes:gv('f-notes') };
     if (type === 'creature') return { name:gv('f-name'), universe:gv('f-universe'), threat:gv('f-threat'), hp:gv('f-hp'), armor:gv('f-armor'), damage:gv('f-damage'), abilities:gv('f-abilities') };
     if (type === 'location') return { name:gv('f-name'), universe:gv('f-universe'), status:gv('f-status'), description:gv('f-description'), connections:gv('f-connections') };

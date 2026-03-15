@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mesa do Mestre</title>
+  <title>Mesa do Mestre — GM</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -26,8 +26,69 @@
   <div class="nav-sep"></div>
   <div class="nav-item" data-s="universes">🌌 Universos</div>
   <div class="nav-sep"></div>
-  <a href="/player.html" target="_blank" class="nav-item" style="text-decoration:none;color:var(--text2);">👥 Visão dos Jogadores</a>
+  <a href="/jogador" target="_blank" class="nav-item" style="text-decoration:none;color:var(--text2);">👥 Visão dos Jogadores</a>
+  <div class="nav-item" onclick="PwChange.open()" style="color:var(--text2);">🔑 Trocar Senha</div>
+  <a href="/" class="nav-item" style="text-decoration:none;color:var(--text2);">🚪 Sair</a>
 </nav>
+
+<!-- Modal trocar senha -->
+<div class="overlay" id="pw-overlay" onclick="if(event.target===this)PwChange.close()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;align-items:center;justify-content:center;">
+  <div style="background:#161616;border:1px solid #2a2a2a;border-radius:8px;padding:28px;width:320px;">
+    <h3 style="font-size:15px;margin-bottom:18px;">Trocar Senha</h3>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:6px;">
+      <input id="pw-current" type="password" placeholder="Senha atual" style="padding:9px 12px;background:#1e1e1e;border:1px solid #2a2a2a;border-radius:4px;color:#e0e0e0;font-size:13px;">
+      <input id="pw-new"     type="password" placeholder="Nova senha"   style="padding:9px 12px;background:#1e1e1e;border:1px solid #2a2a2a;border-radius:4px;color:#e0e0e0;font-size:13px;">
+      <input id="pw-confirm" type="password" placeholder="Confirmar nova senha" style="padding:9px 12px;background:#1e1e1e;border:1px solid #2a2a2a;border-radius:4px;color:#e0e0e0;font-size:13px;">
+    </div>
+    <div id="pw-error" style="color:#e74c3c;font-size:12px;min-height:18px;margin-bottom:10px;"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button onclick="PwChange.close()" style="padding:7px 14px;background:#1e1e1e;border:1px solid #2a2a2a;border-radius:4px;color:#e0e0e0;cursor:pointer;font-size:13px;">Cancelar</button>
+      <button onclick="PwChange.submit()" style="padding:7px 14px;background:#c0392b;border:none;border-radius:4px;color:#fff;cursor:pointer;font-size:13px;font-weight:500;">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const PwChange = {
+  open() {
+    ['pw-current','pw-new','pw-confirm'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('pw-error').textContent = '';
+    const el = document.getElementById('pw-overlay');
+    el.style.display = 'flex';
+    document.getElementById('pw-current').focus();
+  },
+  close() {
+    document.getElementById('pw-overlay').style.display = 'none';
+  },
+  async submit() {
+    const current = document.getElementById('pw-current').value;
+    const novo    = document.getElementById('pw-new').value.trim();
+    const confirm = document.getElementById('pw-confirm').value.trim();
+    const err     = document.getElementById('pw-error');
+    if (!novo)            { err.textContent = 'A nova senha não pode ser vazia.'; return; }
+    if (novo !== confirm) { err.textContent = 'As senhas não coincidem.'; return; }
+    const res  = await fetch('/api/gm/password', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ current, newPassword: novo })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      this.close();
+    } else if (data.error === 'wrong') {
+      err.textContent = 'Senha atual incorreta.';
+      document.getElementById('pw-current').value = '';
+      document.getElementById('pw-current').focus();
+    } else {
+      err.textContent = 'Erro ao salvar senha.';
+    }
+  }
+};
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.getElementById('pw-overlay').style.display === 'flex') PwChange.close();
+});
+</script>
 
 <main id="main">
 
