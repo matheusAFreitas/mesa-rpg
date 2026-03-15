@@ -22,10 +22,10 @@ const Combat = {
         <span style="width:12px;color:var(--accent);font-size:11px;">${cur?'▶':''}</span>
         <div class="init-badge">${x.init??'?'}</div>
         <div class="cname">
-          ${x.name}
+          ${esc(x.name)}
           <div style="margin-top:2px;font-size:10px;">
             <span class="tag">${x.type==='player'?'PJ':'Inimigo'}</span>
-            ${(x.conds||[]).map(c=>`<span class="tag" style="color:#ff9944">${c}</span>`).join('')}
+            ${(x.conds||[]).map(c=>`<span class="tag" style="color:#ff9944">${esc(c)}</span>`).join('')}
           </div>
         </div>
         <div class="hp-ctrl">

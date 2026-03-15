@@ -1,6 +1,10 @@
 // ---- HELPERS ----
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 function gv(id) { const el = document.getElementById(id); return el ? el.value : null; }
+function esc(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
 
 function parseStats(s) {
   if (!s) return {};
