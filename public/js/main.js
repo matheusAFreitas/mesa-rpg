@@ -68,13 +68,19 @@ const App = {
       if (this._saveTimer) return;
       if (this._lastSaveTime && Date.now() - this._lastSaveTime < 1500) return;
 
-      const fresh = await Api.load();
-      if (JSON.stringify(fresh) === JSON.stringify(this.db)) return;
-
-      this.db = fresh;
-      Requests.updateBadge();
-      const active = document.querySelector('.nav-item.active');
-      if (active) this.render(active.dataset.s);
+      try {
+        const fresh = await Api.load();
+        if (JSON.stringify(fresh) === JSON.stringify(this.db)) return;
+        this.db = fresh;
+        Requests.updateBadge();
+        const active = document.querySelector('.nav-item.active');
+        if (active) this.render(active.dataset.s);
+      } catch (err) {
+        console.error('[SSE] Falha ao sincronizar:', err);
+      }
+    };
+    es.onerror = (err) => {
+      console.warn('[SSE] Conexão perdida, tentando reconectar...', err);
     };
   },
 
