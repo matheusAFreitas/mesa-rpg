@@ -1,6 +1,14 @@
 // ---- HELPERS ----
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 function gv(id) { const el = document.getElementById(id); return el ? el.value : null; }
+function esc(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function debounce(fn, ms) {
+  let t;
+  return function(...args) { clearTimeout(t); t = setTimeout(() => fn.apply(this, args), ms); };
+}
 
 function parseStats(s) {
   if (!s) return {};
@@ -64,13 +72,19 @@ const App = {
       if (this._saveTimer) return;
       if (this._lastSaveTime && Date.now() - this._lastSaveTime < 1500) return;
 
-      const fresh = await Api.load();
-      if (JSON.stringify(fresh) === JSON.stringify(this.db)) return;
-
-      this.db = fresh;
-      Requests.updateBadge();
-      const active = document.querySelector('.nav-item.active');
-      if (active) this.render(active.dataset.s);
+      try {
+        const fresh = await Api.load();
+        if (JSON.stringify(fresh) === JSON.stringify(this.db)) return;
+        this.db = fresh;
+        Requests.updateBadge();
+        const active = document.querySelector('.nav-item.active');
+        if (active) this.render(active.dataset.s);
+      } catch (err) {
+        console.error('[SSE] Falha ao sincronizar:', err);
+      }
+    };
+    es.onerror = (err) => {
+      console.warn('[SSE] Conexão perdida, tentando reconectar...', err);
     };
   },
 

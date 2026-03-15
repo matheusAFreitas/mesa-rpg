@@ -1,5 +1,8 @@
 const BASE_STATS = ['FOR', 'DES', 'CON', 'INT', 'SAB', 'CAR'];
 
+// Debounced search handler — called from oninput in HTML
+const _searchDebounced = {};
+
 const Cards = {
   statRowHTML(k = '', v = '', fixed = false) {
     const keyInput = fixed
@@ -13,6 +16,13 @@ const Cards = {
       <input type="number" class="fc stat-val" placeholder="0" value="${v}">
       ${removeBtn}
     </div>`;
+  },
+
+  search(type) {
+    if (!_searchDebounced[type]) {
+      _searchDebounced[type] = debounce(() => Cards.render(type), 250);
+    }
+    _searchDebounced[type]();
   },
 
   addStatRow() {
@@ -44,21 +54,21 @@ const Cards = {
       const pct = i.hp_max > 0 ? Math.max(0, i.hp / i.hp_max * 100) : 100;
       const col = pct > 50 ? 'var(--ok)' : pct > 25 ? 'var(--warn)' : 'var(--danger)';
       const statsHTML = i.stats ? Object.entries(i.stats).filter(([,v])=>v)
-        .map(([k,v]) => `<div class="stat"><div class="stat-label">${k}</div><div class="stat-value">${v}</div></div>`).join('') : '';
+        .map(([k,v]) => `<div class="stat"><div class="stat-label">${esc(k)}</div><div class="stat-value">${esc(v)}</div></div>`).join('') : '';
       const lvl = i.level || 1;
       const xp = i.xp || 0; const xpNext = i.xp_next || 0;
       const xpPct = xpNext > 0 ? Math.min(100, xp / xpNext * 100) : 0;
       return `<div class="card">
         <div class="card-header"><div>
-          <div class="card-title">${i.name} <span style="font-size:11px;color:var(--accent);font-weight:600;">Nv.${lvl}</span></div>
-          <span class="tag" style="${uStyle}">${i.universe||'—'}</span>${i.class?`<span class="tag">${i.class}</span>`:''}
+          <div class="card-title">${esc(i.name)} <span style="font-size:11px;color:var(--accent);font-weight:600;">Nv.${lvl}</span></div>
+          <span class="tag" style="${uStyle}">${esc(i.universe)||'—'}</span>${i.class?`<span class="tag">${esc(i.class)}</span>`:''}
         </div>${acts}</div>
-        ${i.hp_max>0?`<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text2)"><span>HP</span><span>${i.hp}/${i.hp_max}</span></div>
+        ${i.hp_max>0?`<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text2)"><span>HP</span><span>${esc(i.hp)}/${esc(i.hp_max)}</span></div>
         <div class="hp-bar"><div class="hp-fill" style="width:${pct}%;background:${col}"></div></div>`:''}
         ${xpNext>0?`<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-top:4px"><span>XP</span><span>${xp}/${xpNext}</span></div>
         <div class="hp-bar"><div class="hp-fill" style="width:${xpPct}%;background:var(--accent)"></div></div>`:''}
         <div class="stat-block">${statsHTML}</div>
-        ${i.notes?`<div class="card-notes">${i.notes}</div>`:''}
+        ${i.notes?`<div class="card-notes">${esc(i.notes)}</div>`:''}
       </div>`;
     }
 
@@ -66,13 +76,13 @@ const Cards = {
       const attCol = i.attitude==='Aliado'?'#55cc55':i.attitude==='Inimigo'?'#cc5555':'#cccc55';
       return `<div class="card">
         <div class="card-header"><div>
-          <div class="card-title">${i.name}</div>
-          <span class="tag" style="${uStyle}">${i.universe||'—'}</span>
-          ${i.faction?`<span class="tag">${i.faction}</span>`:''}
-          ${i.attitude?`<span class="tag" style="color:${attCol}">${i.attitude}</span>`:''}
+          <div class="card-title">${esc(i.name)}</div>
+          <span class="tag" style="${uStyle}">${esc(i.universe)||'—'}</span>
+          ${i.faction?`<span class="tag">${esc(i.faction)}</span>`:''}
+          ${i.attitude?`<span class="tag" style="color:${attCol}">${esc(i.attitude)}</span>`:''}
         </div>${acts}</div>
-        ${i.role?`<div style="font-size:11px;color:var(--text2);margin-bottom:5px;">${i.role}</div>`:''}
-        ${i.notes?`<div class="card-notes">${i.notes}</div>`:''}
+        ${i.role?`<div style="font-size:11px;color:var(--text2);margin-bottom:5px;">${esc(i.role)}</div>`:''}
+        ${i.notes?`<div class="card-notes">${esc(i.notes)}</div>`:''}
       </div>`;
     }
 
@@ -80,16 +90,16 @@ const Cards = {
       const thrCol = (i.threat==='Alta'||i.threat==='Extrema') ? '#cc5555' : i.threat==='Média' ? '#ccaa44' : '#55cc55';
       return `<div class="card">
         <div class="card-header"><div>
-          <div class="card-title">${i.name}</div>
-          <span class="tag" style="${uStyle}">${i.universe||'—'}</span>
-          ${i.threat?`<span class="tag" style="color:${thrCol}">${i.threat}</span>`:''}
+          <div class="card-title">${esc(i.name)}</div>
+          <span class="tag" style="${uStyle}">${esc(i.universe)||'—'}</span>
+          ${i.threat?`<span class="tag" style="color:${thrCol}">${esc(i.threat)}</span>`:''}
         </div>${acts}</div>
         <div class="stat-block">
-          ${i.hp?`<div class="stat"><div class="stat-label">HP</div><div class="stat-value">${i.hp}</div></div>`:''}
-          ${i.armor?`<div class="stat"><div class="stat-label">Arm.</div><div class="stat-value">${i.armor}</div></div>`:''}
-          ${i.damage?`<div class="stat"><div class="stat-label">Dano</div><div class="stat-value">${i.damage}</div></div>`:''}
+          ${i.hp?`<div class="stat"><div class="stat-label">HP</div><div class="stat-value">${esc(i.hp)}</div></div>`:''}
+          ${i.armor?`<div class="stat"><div class="stat-label">Arm.</div><div class="stat-value">${esc(i.armor)}</div></div>`:''}
+          ${i.damage?`<div class="stat"><div class="stat-label">Dano</div><div class="stat-value">${esc(i.damage)}</div></div>`:''}
         </div>
-        ${i.abilities?`<div class="card-notes">${i.abilities}</div>`:''}
+        ${i.abilities?`<div class="card-notes">${esc(i.abilities)}</div>`:''}
       </div>`;
     }
 
@@ -97,12 +107,12 @@ const Cards = {
       const stCol = i.status==='Seguro'?'#55cc55':i.status==='Perigoso'?'#cc5555':'var(--text2)';
       return `<div class="card">
         <div class="card-header"><div>
-          <div class="card-title">${i.name}</div>
-          <span class="tag" style="${uStyle}">${i.universe||'—'}</span>
-          ${i.status?`<span class="tag" style="color:${stCol}">${i.status}</span>`:''}
+          <div class="card-title">${esc(i.name)}</div>
+          <span class="tag" style="${uStyle}">${esc(i.universe)||'—'}</span>
+          ${i.status?`<span class="tag" style="color:${stCol}">${esc(i.status)}</span>`:''}
         </div>${acts}</div>
-        ${i.description?`<div class="card-notes">${i.description}</div>`:''}
-        ${i.connections?`<div style="font-size:10px;color:var(--text2);margin-top:5px;">📍 ${i.connections}</div>`:''}
+        ${i.description?`<div class="card-notes">${esc(i.description)}</div>`:''}
+        ${i.connections?`<div style="font-size:10px;color:var(--text2);margin-top:5px;">📍 ${esc(i.connections)}</div>`:''}
       </div>`;
     }
     return '';
