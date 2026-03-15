@@ -67,7 +67,7 @@
       <h2>Jogadores (PJs)</h2>
       <button class="btn btn-primary" onclick="App.openModal('pj')">+ Adicionar PJ</button>
     </div>
-    <div class="filter-bar"><input type="text" id="search-pj" placeholder="Buscar..." oninput="Cards.render('pj')"></div>
+    <div class="filter-bar"><input type="text" id="search-pj" placeholder="Buscar..." oninput="Cards.search('pj')"></div>
     <div class="cards-grid" id="cards-pj"></div>
   </section>
 
@@ -77,7 +77,7 @@
       <h2>NPCs</h2>
       <button class="btn btn-primary" onclick="App.openModal('npc')">+ Adicionar NPC</button>
     </div>
-    <div class="filter-bar"><input type="text" id="search-npc" placeholder="Buscar por nome, facção, universo..." oninput="Cards.render('npc')"></div>
+    <div class="filter-bar"><input type="text" id="search-npc" placeholder="Buscar por nome, facção, universo..." oninput="Cards.search('npc')"></div>
     <div class="cards-grid" id="cards-npc"></div>
   </section>
 
@@ -87,7 +87,7 @@
       <h2>Bestiário</h2>
       <button class="btn btn-primary" onclick="App.openModal('creature')">+ Adicionar Criatura</button>
     </div>
-    <div class="filter-bar"><input type="text" id="search-creature" placeholder="Buscar..." oninput="Cards.render('creature')"></div>
+    <div class="filter-bar"><input type="text" id="search-creature" placeholder="Buscar..." oninput="Cards.search('creature')"></div>
     <div class="cards-grid" id="cards-creature"></div>
   </section>
 
@@ -97,7 +97,7 @@
       <h2>Locais</h2>
       <button class="btn btn-primary" onclick="App.openModal('location')">+ Adicionar Local</button>
     </div>
-    <div class="filter-bar"><input type="text" id="search-location" placeholder="Buscar..." oninput="Cards.render('location')"></div>
+    <div class="filter-bar"><input type="text" id="search-location" placeholder="Buscar..." oninput="Cards.search('location')"></div>
     <div class="cards-grid" id="cards-location"></div>
   </section>
 

@@ -1,5 +1,8 @@
 const BASE_STATS = ['FOR', 'DES', 'CON', 'INT', 'SAB', 'CAR'];
 
+// Debounced search handler — called from oninput in HTML
+const _searchDebounced = {};
+
 const Cards = {
   statRowHTML(k = '', v = '', fixed = false) {
     const keyInput = fixed
@@ -13,6 +16,13 @@ const Cards = {
       <input type="number" class="fc stat-val" placeholder="0" value="${v}">
       ${removeBtn}
     </div>`;
+  },
+
+  search(type) {
+    if (!_searchDebounced[type]) {
+      _searchDebounced[type] = debounce(() => Cards.render(type), 250);
+    }
+    _searchDebounced[type]();
   },
 
   addStatRow() {
