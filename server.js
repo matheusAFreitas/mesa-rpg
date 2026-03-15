@@ -1,6 +1,9 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const bcrypt = require('bcrypt');
+
+const BCRYPT_ROUNDS = 10;
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -63,16 +66,17 @@ app.get('/api/gm/auth', (req, res) => {
   res.json({ hasPassword: !!db.gm_password });
 });
 
-app.post('/api/gm/auth', (req, res) => {
+app.post('/api/gm/auth', async (req, res) => {
   const db = readDB();
   const { password } = req.body;
+  if (!password || !password.trim()) return res.json({ ok: false, error: 'empty' });
   if (!db.gm_password) {
-    if (!password || !password.trim()) return res.json({ ok: false, error: 'empty' });
-    db.gm_password = password.trim();
+    db.gm_password = await bcrypt.hash(password.trim(), BCRYPT_ROUNDS);
     writeDB(db);
     return res.json({ ok: true, set: true });
   }
-  res.json({ ok: db.gm_password === password });
+  const match = await bcrypt.compare(password, db.gm_password);
+  res.json({ ok: match });
 });
 
 app.delete('/api/gm/password', (req, res) => {
@@ -82,14 +86,16 @@ app.delete('/api/gm/password', (req, res) => {
   res.json({ ok: true });
 });
 
-app.put('/api/gm/password', (req, res) => {
+app.put('/api/gm/password', async (req, res) => {
   const db = readDB();
   const { current, newPassword } = req.body;
-  if (db.gm_password && db.gm_password !== current)
-    return res.json({ ok: false, error: 'wrong' });
+  if (db.gm_password) {
+    const match = await bcrypt.compare(current || '', db.gm_password);
+    if (!match) return res.json({ ok: false, error: 'wrong' });
+  }
   if (!newPassword || !newPassword.trim())
     return res.json({ ok: false, error: 'empty' });
-  db.gm_password = newPassword.trim();
+  db.gm_password = await bcrypt.hash(newPassword.trim(), BCRYPT_ROUNDS);
   writeDB(db);
   res.json({ ok: true });
 });
