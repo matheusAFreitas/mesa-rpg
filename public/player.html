@@ -33,6 +33,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 .pj-sel-card .hp-bar{height:4px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-top:10px;}
 .pj-sel-card .hp-fill{height:100%;border-radius:3px;}
 .empty-msg{text-align:center;color:var(--text2);padding:60px 20px;font-size:14px;}
+.empty-msg.rejected{background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.3);border-radius:8px;color:var(--text);padding:24px 20px;}
 
 /* ---- PIN MODAL ---- */
 .pin-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;align-items:center;justify-content:center;}
@@ -105,6 +106,27 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 .inv-add-row input:focus{outline:none;border-color:var(--accent);}
 .tag{display:inline-block;padding:2px 8px;border-radius:3px;font-size:11px;font-weight:600;background:var(--bg3);color:var(--text2);border:1px solid var(--border);}
 
+/* ---- CREATE SCREEN ---- */
+#screen-create{display:none;max-width:600px;margin:0 auto;padding:40px 20px;}
+#screen-create .header{text-align:center;margin-bottom:28px;}
+#screen-create .header h1{font-size:20px;letter-spacing:3px;text-transform:uppercase;color:var(--accent);}
+#screen-create .header p{color:var(--text2);font-size:13px;margin-top:6px;}
+.create-form{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:24px;display:flex;flex-direction:column;gap:14px;}
+.create-form label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:4px;}
+.create-form input,.create-form select,.create-form textarea{width:100%;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:13px;font-family:inherit;}
+.create-form input:focus,.create-form select:focus,.create-form textarea:focus{outline:none;border-color:var(--accent);}
+.create-form textarea{min-height:80px;resize:vertical;}
+.create-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.create-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:4px;}
+/* ---- PENDING SCREEN ---- */
+#screen-pending{display:none;align-items:center;justify-content:center;min-height:100vh;}
+.pending-box{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:40px 32px;text-align:center;max-width:380px;}
+.pending-box .pi{font-size:40px;margin-bottom:16px;}
+.pending-box h2{font-size:16px;margin-bottom:6px;}
+.pending-box p{font-size:13px;color:var(--text2);margin-bottom:6px;}
+.pending-box .char-label{font-size:18px;font-weight:700;color:var(--accent);margin:12px 0;}
+.pending-pulse{width:12px;height:12px;border-radius:50%;background:var(--warn);display:inline-block;margin-right:6px;animation:pulse 1.4s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.85)}}
 /* ---- MAPA ---- */
 #wm-wrap{position:relative;width:100%;height:100%;}
 #wm-canvas{display:block;width:100%;height:100%;}
@@ -118,11 +140,63 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 
 <!-- ===== SELECT SCREEN ===== -->
 <div id="screen-select">
+  <div style="text-align:right;margin-bottom:8px;">
+    <a href="/" class="btn btn-secondary btn-sm" style="text-decoration:none;">⬅ Início</a>
+  </div>
   <div class="header">
     <h1>Mesa do Mestre</h1>
     <p>Selecione seu personagem para continuar</p>
   </div>
   <div id="pj-grid" class="pj-grid"></div>
+  <div id="pj-empty" class="empty-msg" style="display:none">Nenhum personagem cadastrado ainda.<br>Crie um personagem ou aguarde o Mestre adicioná-lo.</div>
+</div>
+
+<!-- ===== CREATE SCREEN ===== -->
+<div id="screen-create">
+  <div class="header">
+    <h1>Criar Personagem</h1>
+    <p>Preencha as informações e envie para o Mestre aprovar</p>
+  </div>
+  <div class="create-form">
+    <div>
+      <label>Nome *</label>
+      <input id="cr-name" type="text" placeholder="Nome do personagem">
+    </div>
+    <div class="create-row">
+      <div>
+        <label>Classe / Origem</label>
+        <input id="cr-class" type="text" placeholder="Ex: Soldado, Médico...">
+      </div>
+      <div>
+        <label>Universo</label>
+        <select id="cr-universe"></select>
+      </div>
+    </div>
+    <div>
+      <label>Atributos (ex: FOR:10, DES:8, INT:6)</label>
+      <input id="cr-stats" type="text" placeholder="FOR:10, DES:8, INT:6">
+    </div>
+    <div>
+      <label>Background / Notas</label>
+      <textarea id="cr-notes" placeholder="História, motivações, aparência..."></textarea>
+    </div>
+    <div class="create-actions">
+      <button class="btn btn-secondary" onclick="Player.cancelCreate()">Voltar</button>
+      <button class="btn btn-primary" onclick="Player.submitRequest()">Enviar ao Mestre</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PENDING SCREEN ===== -->
+<div id="screen-pending">
+  <div class="pending-box">
+    <div class="pi">⏳</div>
+    <h2>Aguardando Aprovação</h2>
+    <div class="char-label" id="pending-name"></div>
+    <p><span class="pending-pulse"></span>Aguardando o Mestre aprovar seu personagem...</p>
+    <p style="margin-top:16px;font-size:12px;color:var(--text2);">Você será redirecionado automaticamente quando aprovado.</p>
+    <button class="btn btn-secondary btn-sm" style="margin-top:20px;" onclick="Player.cancelRequest()">Cancelar Solicitação</button>
+  </div>
 </div>
 
 <!-- ===== PIN MODAL ===== -->
@@ -188,40 +262,152 @@ const Player = {
   async init() {
     const res = await fetch('/api/player/data');
     this.db = await res.json();
-    this.renderSelector();
-    // Poll for data changes (GM may update things)
-    setInterval(async () => {
+    // Check if there's a pending request from a previous session
+    const pendingId = localStorage.getItem('pending-request-id');
+    if (pendingId) {
+      const approved = this.db.pj.find(p => p.id === pendingId);
+      const stillPending = (this.db.pending_pj || []).find(p => p.id === pendingId);
+      if (approved) {
+        localStorage.removeItem('pending-request-id');
+        this.renderSelector();
+      } else if (stillPending) {
+        this.showPending(pendingId, stillPending.name);
+      } else {
+        localStorage.removeItem('pending-request-id');
+        this.renderSelector();
+      }
+    } else {
+      this.renderSelector();
+    }
+    // SSE — atualiza em tempo real quando o servidor muda
+    const es = new EventSource('/api/events');
+    es.onmessage = async () => {
       const r = await fetch('/api/player/data');
       this.db = await r.json();
       if (this.pj) {
         this.pj = this.db.pj.find(p => p.id === this.pj.id) || this.pj;
         this.renderFicha();
         PMap.syncAndDraw();
+      } else {
+        const pendingId = localStorage.getItem('pending-request-id');
+        if (pendingId) {
+          const approved     = this.db.pj.find(p => p.id === pendingId);
+          const stillPending = (this.db.pending_pj || []).find(p => p.id === pendingId);
+          if (approved) {
+            // Aprovado — vai para seleção
+            localStorage.removeItem('pending-request-id');
+            document.getElementById('screen-pending').style.display = 'none';
+            document.getElementById('screen-select').style.display = '';
+            this.renderSelector();
+            return;
+          } else if (!stillPending) {
+            // Rejeitado — avisa o jogador e para aqui
+            localStorage.removeItem('pending-request-id');
+            document.getElementById('screen-pending').style.display = 'none';
+            document.getElementById('screen-select').style.display = '';
+            this.renderSelector('❌ Seu personagem foi <strong>rejeitado</strong> pelo Mestre.<br>Crie um novo personagem ou aguarde contato.');
+            return;
+          }
+          return; // ainda pendente, não re-renderiza
+        }
+        // Re-render selector se estiver visível (ex: GM deletou personagens)
+        if (document.getElementById('screen-select').style.display !== 'none') {
+          this.renderSelector();
+        }
       }
-    }, 8000);
+    };
   },
 
-  renderSelector() {
-    const grid = document.getElementById('pj-grid');
+  renderSelector(rejectionMsg) {
+    const grid  = document.getElementById('pj-grid');
+    const empty = document.getElementById('pj-empty');
     if (!this.db.pj || !this.db.pj.length) {
-      grid.innerHTML = '<div class="empty-msg">Nenhum personagem cadastrado ainda.<br>Aguarde o Mestre adicionar seus personagens.</div>';
-      return;
+      grid.innerHTML = '';
+      empty.innerHTML = rejectionMsg || 'Nenhum personagem cadastrado ainda.<br>Crie um personagem ou aguarde o Mestre adicioná-lo.';
+      empty.className = rejectionMsg ? 'empty-msg rejected' : 'empty-msg';
+      empty.style.display = '';
+    } else {
+      empty.style.display = 'none';
+      grid.innerHTML = this.db.pj.map(p => {
+        const pct = p.hp_max ? Math.max(0, Math.min(100, (p.hp / p.hp_max) * 100)) : 100;
+        const color = pct > 60 ? '#27ae60' : pct > 25 ? '#f39c12' : '#e74c3c';
+        const uSlug = (p.universe||'').toLowerCase().replace(/\s+/g,'').replace(/[^a-z0-9]/g,'');
+        const tagClass = ['doom','fallout','twd','l4d','alltomorrows','ryukendo'].includes(uSlug) ? `tag-${uSlug}` : 'tag-custom';
+        return `<div class="pj-sel-card" onclick="Player.select('${p.id}')">
+          <div class="name">${p.name||'—'}</div>
+          <div class="meta" style="margin-top:3px;">
+            ${p.universe ? `<span class="tag ${tagClass}" style="font-size:10px;">${p.universe}</span>` : ''}
+            ${p.class ? `<span style="font-size:11px;color:var(--text2);margin-left:4px;">${p.class}</span>` : ''}
+          </div>
+          ${p.hp_max ? `<div class="hp-bar" style="margin-top:10px;"><div class="hp-fill" style="width:${pct}%;background:${color};"></div></div>` : ''}
+          ${p.pin ? '<div style="font-size:10px;color:var(--text2);margin-top:6px;">🔒 PIN necessário</div>' : ''}
+        </div>`;
+      }).join('');
     }
-    grid.innerHTML = this.db.pj.map(p => {
-      const pct = p.hp_max ? Math.max(0, Math.min(100, (p.hp / p.hp_max) * 100)) : 100;
-      const color = pct > 60 ? '#27ae60' : pct > 25 ? '#f39c12' : '#e74c3c';
-      const uSlug = (p.universe||'').toLowerCase().replace(/\s+/g,'').replace(/[^a-z0-9]/g,'');
-      const tagClass = ['doom','fallout','twd','l4d','alltomorrows','ryukendo'].includes(uSlug) ? `tag-${uSlug}` : 'tag-custom';
-      return `<div class="pj-sel-card" onclick="Player.select('${p.id}')">
-        <div class="name">${p.name||'—'}</div>
-        <div class="meta" style="margin-top:3px;">
-          ${p.universe ? `<span class="tag ${tagClass}" style="font-size:10px;">${p.universe}</span>` : ''}
-          ${p.class ? `<span style="font-size:11px;color:var(--text2);margin-left:4px;">${p.class}</span>` : ''}
-        </div>
-        ${p.hp_max ? `<div class="hp-bar" style="margin-top:10px;"><div class="hp-fill" style="width:${pct}%;background:${color};"></div></div>` : ''}
-        ${p.pin ? '<div style="font-size:10px;color:var(--text2);margin-top:6px;">🔒 PIN necessário</div>' : ''}
-      </div>`;
-    }).join('');
+    // Botão de criar personagem (remove o anterior antes de inserir)
+    const old = document.getElementById('create-btn-wrap');
+    if (old) old.remove();
+    grid.insertAdjacentHTML('afterend', `
+      <div id="create-btn-wrap" style="text-align:center;margin-top:24px;">
+        <button class="btn btn-secondary" onclick="Player.showCreate()">+ Criar Personagem</button>
+      </div>`);
+  },
+
+  showCreate() {
+    document.getElementById('screen-select').style.display = 'none';
+    // Populate universe select
+    const sel = document.getElementById('cr-universe');
+    sel.innerHTML = (this.db.universes || []).map(u => `<option value="${u.name}">${u.name}</option>`).join('');
+    document.getElementById('screen-create').style.display = 'block';
+    document.getElementById('cr-name').focus();
+  },
+
+  cancelCreate() {
+    document.getElementById('screen-create').style.display = 'none';
+    document.getElementById('screen-select').style.display = '';
+  },
+
+  async submitRequest() {
+    const name = document.getElementById('cr-name').value.trim();
+    if (!name) { alert('Nome é obrigatório.'); return; }
+    const statsRaw = document.getElementById('cr-stats').value;
+    const stats = {};
+    statsRaw.split(',').forEach(p => { const [k,v] = (p||'').trim().split(':'); if(k&&v) stats[k.trim().toUpperCase()] = v.trim(); });
+    const payload = {
+      name,
+      class:    document.getElementById('cr-class').value.trim(),
+      universe: document.getElementById('cr-universe').value,
+      stats,
+      notes:    document.getElementById('cr-notes').value.trim(),
+    };
+    const res = await fetch('/api/player/request', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data.ok) {
+      localStorage.setItem('pending-request-id', data.id);
+      document.getElementById('screen-create').style.display = 'none';
+      this.showPending(data.id, name);
+    }
+  },
+
+  showPending(id, name) {
+    document.getElementById('screen-select').style.display = 'none';
+    document.getElementById('pending-name').textContent = name;
+    document.getElementById('screen-pending').style.display = 'flex';
+  },
+
+  async cancelRequest() {
+    const id = localStorage.getItem('pending-request-id');
+    if (id) {
+      await fetch(`/api/gm/pending/${id}`, { method: 'DELETE' });
+      localStorage.removeItem('pending-request-id');
+    }
+    document.getElementById('screen-pending').style.display = 'none';
+    document.getElementById('screen-select').style.display = '';
+    this.renderSelector();
   },
 
   select(id) {

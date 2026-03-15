@@ -12,7 +12,8 @@ const DEFAULT_DB = {
   notes: '',
   worldMap: { positions: {}, edges: [] },
   dungeons: [],
-  universes: []
+  universes: [],
+  pending_pj: []
 };
 
 function readDB() {
@@ -23,9 +24,16 @@ function readDB() {
   }
 }
 
+const sseClients = new Set();
+
+function broadcastUpdate() {
+  for (const client of sseClients) client.write('data: update\n\n');
+}
+
 function writeDB(data) {
   fs.mkdirSync(path.dirname(DB_FILE), { recursive: true });
   fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
+  broadcastUpdate();
 }
 
 app.use(express.json({ limit: '10mb' }));
@@ -36,6 +44,18 @@ app.get('/mestre',  (req, res) => res.sendFile(path.join(__dirname, 'public', 'm
 app.get('/jogador', (req, res) => res.sendFile(path.join(__dirname, 'public', 'player.html')));
 
 app.use(express.static(path.join(__dirname, 'public')));
+
+// SSE — clientes se inscrevem aqui e recebem "update" sempre que o DB mudar
+app.get('/api/events', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
+  sseClients.add(res);
+  // Heartbeat a cada 25s para manter a conexão viva
+  const hb = setInterval(() => res.write(': ping\n\n'), 25000);
+  req.on('close', () => { sseClients.delete(res); clearInterval(hb); });
+});
 
 // GM auth
 app.get('/api/gm/auth', (req, res) => {
@@ -53,6 +73,13 @@ app.post('/api/gm/auth', (req, res) => {
     return res.json({ ok: true, set: true });
   }
   res.json({ ok: db.gm_password === password });
+});
+
+app.delete('/api/gm/password', (req, res) => {
+  const db = readDB();
+  delete db.gm_password;
+  writeDB(db);
+  res.json({ ok: true });
 });
 
 app.put('/api/gm/password', (req, res) => {
@@ -78,7 +105,39 @@ app.put('/api/db', (req, res) => {
 app.get('/api/player/data', (req, res) => {
   const db = readDB();
   const pj = db.pj.map(({ gm_notes, ...rest }) => rest);
-  res.json({ pj, location: db.location, worldMap: db.worldMap, universes: db.universes });
+  res.json({ pj, pending_pj: db.pending_pj || [], location: db.location, worldMap: db.worldMap, universes: db.universes });
+});
+
+// Player submits a character creation request
+app.post('/api/player/request', (req, res) => {
+  const db = readDB();
+  if (!db.pending_pj) db.pending_pj = [];
+  const entry = { ...req.body, id: Date.now().toString(36) + Math.random().toString(36).slice(2,5), submittedAt: new Date().toISOString() };
+  db.pending_pj.push(entry);
+  writeDB(db);
+  res.json({ ok: true, id: entry.id });
+});
+
+// GM approves a pending request (moves to pj[])
+app.post('/api/gm/approve/:id', (req, res) => {
+  const db = readDB();
+  const idx = (db.pending_pj || []).findIndex(p => p.id === req.params.id);
+  if (idx < 0) return res.status(404).json({ error: 'not found' });
+  const pj = db.pending_pj.splice(idx, 1)[0];
+  delete pj.submittedAt;
+  db.pj.push(pj);
+  writeDB(db);
+  res.json({ ok: true });
+});
+
+// GM rejects a pending request
+app.delete('/api/gm/pending/:id', (req, res) => {
+  const db = readDB();
+  const idx = (db.pending_pj || []).findIndex(p => p.id === req.params.id);
+  if (idx < 0) return res.status(404).json({ error: 'not found' });
+  db.pending_pj.splice(idx, 1);
+  writeDB(db);
+  res.json({ ok: true });
 });
 
 // Player can update their own HP (and temp HP)

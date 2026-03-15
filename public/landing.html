@@ -66,6 +66,9 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
       <button class="btn btn-secondary" onclick="GM.close()">Cancelar</button>
       <button class="btn btn-primary" id="pw-btn" onclick="GM.submit()">Entrar</button>
     </div>
+    <div id="reset-wrap" style="text-align:center;margin-top:14px;display:none;">
+      <button onclick="GM.resetPassword()" style="background:none;border:none;color:#888;font-size:12px;cursor:pointer;text-decoration:underline;">Esqueci a senha — resetar acesso</button>
+    </div>
   </div>
 </div>
 
@@ -83,6 +86,7 @@ const GM = {
       ? 'Digite a senha para acessar a área do Mestre.'
       : 'Nenhuma senha configurada. Defina uma senha para proteger a área do Mestre.';
     document.getElementById('pw-btn').textContent = hasPassword ? 'Entrar' : 'Definir Senha';
+    document.getElementById('reset-wrap').style.display = hasPassword ? 'block' : 'none';
     document.getElementById('pw-input').value = '';
     document.getElementById('pw-error').textContent = '';
     document.getElementById('overlay').classList.add('open');
@@ -91,6 +95,12 @@ const GM = {
 
   close() {
     document.getElementById('overlay').classList.remove('open');
+  },
+
+  async resetPassword() {
+    if (!confirm('Resetar a senha? Você precisará criar uma nova no próximo acesso.')) return;
+    await fetch('/api/gm/password', { method: 'DELETE' });
+    window.location.href = '/mestre';
   },
 
   async submit() {

@@ -97,8 +97,8 @@ const Cards = {
         <div class="fg"><label>Universo</label><select class="fc" id="f-universe">${unis}</select></div>
       </div>
       <div class="fr2">
-        <div class="fg"><label>HP Atual</label><input type="number" class="fc" id="f-hp" value="${i?.hp||''}"></div>
-        <div class="fg"><label>HP Máximo</label><input type="number" class="fc" id="f-hp_max" value="${i?.hp_max||''}"></div>
+        <div class="fg"><label>HP Atual *</label><input type="number" class="fc" id="f-hp" value="${i?.hp||''}" onchange="const m=document.getElementById('f-hp_max');if(!m.value)m.value=this.value;"></div>
+        <div class="fg"><label>HP Máximo *</label><input type="number" class="fc" id="f-hp_max" value="${i?.hp_max||''}"></div>
       </div>
       <div class="fr3">
         <div class="fg"><label>Nível</label><input type="number" class="fc" id="f-level" value="${i?.level||1}" min="1"></div>

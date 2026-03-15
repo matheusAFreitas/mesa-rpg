@@ -26,6 +26,11 @@
   <div class="nav-sep"></div>
   <div class="nav-item" data-s="universes">🌌 Universos</div>
   <div class="nav-sep"></div>
+  <div class="nav-item" data-s="requests" style="display:flex;align-items:center;gap:6px;">
+    📋 Solicitações
+    <span id="requests-badge" style="display:none;background:var(--accent);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;line-height:16px;min-width:16px;text-align:center;"></span>
+  </div>
+  <div class="nav-sep"></div>
   <a href="/jogador" target="_blank" class="nav-item" style="text-decoration:none;color:var(--text2);">👥 Visão dos Jogadores</a>
   <div class="nav-item" onclick="PwChange.open()" style="color:var(--text2);">🔑 Trocar Senha</div>
   <a href="/" class="nav-item" style="text-decoration:none;color:var(--text2);">🚪 Sair</a>
@@ -270,6 +275,15 @@ document.addEventListener('keydown', e => {
     </div>
   </section>
 
+  <!-- SOLICITAÇÕES -->
+  <section id="s-requests" class="section">
+    <div class="page-header">
+      <h2>Solicitações de Personagem</h2>
+    </div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:18px;">Jogadores que criaram personagens e aguardam aprovação. Ao aprovar, o personagem entra na lista de PJs.</p>
+    <div id="requests-list"></div>
+  </section>
+
   <!-- UNIVERSOS -->
   <section id="s-universes" class="section">
     <div class="page-header">
@@ -290,6 +304,7 @@ document.addEventListener('keydown', e => {
 </div>
 
 <script src="/js/api.js"></script>
+<script src="/js/requests.js"></script>
 <script src="/js/main.js"></script>
 <script src="/js/dashboard.js"></script>
 <script src="/js/cards.js"></script>

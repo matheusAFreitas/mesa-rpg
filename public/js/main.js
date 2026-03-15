@@ -40,7 +40,8 @@ const App = {
     }
     this.setupNav();
     this.render('dashboard');
-    this.startPolling();
+    Requests.updateBadge();
+    this.startSSE();
     document.addEventListener('input', e => {
       if (e.target.id === 'quick-notes') { this.db.notes = e.target.value; this.save(); }
     });
@@ -51,22 +52,26 @@ const App = {
     this._saveTimer = setTimeout(() => {
       Api.save(this.db);
       this._saveTimer = null;
+      this._lastSaveTime = Date.now();
     }, 600);
   },
 
-  startPolling() {
-    setInterval(async () => {
-      // Skip if GM has a modal open or has unsaved changes in progress
+  startSSE() {
+    const es = new EventSource('/api/events');
+    es.onmessage = async () => {
+      // Ignora se modal aberto, save pendente ou acabou de salvar (evita loop)
       if (document.getElementById('overlay').classList.contains('open')) return;
       if (this._saveTimer) return;
+      if (this._lastSaveTime && Date.now() - this._lastSaveTime < 1500) return;
 
       const fresh = await Api.load();
       if (JSON.stringify(fresh) === JSON.stringify(this.db)) return;
 
       this.db = fresh;
+      Requests.updateBadge();
       const active = document.querySelector('.nav-item.active');
       if (active) this.render(active.dataset.s);
-    }, 8000);
+    };
   },
 
   setupNav() {
@@ -95,6 +100,7 @@ const App = {
       case 'map-world':   WorldMap.init(); break;
       case 'map-dungeon': DungeonMap.init(); break;
       case 'universes':   Universes.render(); break;
+      case 'requests':    Requests.render(); break;
     }
   },
 
@@ -128,8 +134,9 @@ const App = {
   // ---- MODAL ----
   _mType: null,
   _mId: null,
+  _pendingApprovalId: null,
 
-  openModal(type, id = null) {
+  openModal(type, id = null, prefill = null) {
     this._mType = type;
     this._mId = id;
 
@@ -141,7 +148,7 @@ const App = {
     } else if (type === 'universe') {
       Universes.openAdd(id); return;
     } else {
-      const item = id ? this.db[type]?.find(x => x.id === id) : null;
+      const item = id ? this.db[type]?.find(x => x.id === id) : (prefill || null);
       formHTML = Cards.modalForm(type, item);
     }
 
@@ -155,6 +162,7 @@ const App = {
 
   closeModal() {
     document.getElementById('overlay').classList.remove('open');
+    this._pendingApprovalId = null;
   },
 
   closeModalOutside(e) {
@@ -170,12 +178,17 @@ const App = {
 
     const item = Cards.readForm(type);
     if (!item.name) { alert('Nome é obrigatório!'); return; }
+    if (type === 'pj' && (!item.hp || !item.hp_max)) { alert('HP Atual e HP Máximo são obrigatórios!'); return; }
 
     if (id) {
       const idx = this.db[type].findIndex(x => x.id === id);
       if (idx >= 0) this.db[type][idx] = { ...this.db[type][idx], ...item };
     } else {
-      item.id = uid();
+      item.id = this._pendingApprovalId || uid();
+      if (this._pendingApprovalId) {
+        this.db.pending_pj = (this.db.pending_pj || []).filter(p => p.id !== this._pendingApprovalId);
+        this._pendingApprovalId = null;
+      }
       this.db[type].push(item);
     }
 
