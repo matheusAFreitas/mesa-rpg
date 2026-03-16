@@ -150,8 +150,9 @@ const Cards = {
         </div>
         <button type="button" class="btn btn-secondary btn-sm" style="margin-top:6px" onclick="Cards.addStatRow()">+ Atributo Custom</button>
       </div>
-      <div class="fg"><label>Anotações (visível ao jogador)</label><textarea class="fc" id="f-notes">${i?.notes||''}</textarea></div>
-      <div class="fg"><label>Notas do Mestre (privado — jogador não vê)</label><textarea class="fc" id="f-gm_notes" style="border-color:#5a3a1a">${i?.gm_notes||''}</textarea></div>
+      <div class="fg"><label>Anotações (jogador vê e edita)</label><textarea class="fc" id="f-notes">${i?.notes||''}</textarea></div>
+      <div class="fg"><label>Recados para o Jogador (Mestre escreve — jogador só lê)</label><textarea class="fc" id="f-gm_to_player_notes" style="border-color:#1a4a5a">${i?.gm_to_player_notes||''}</textarea></div>
+      <div class="fg"><label>Notas Secretas do Mestre (jogador não vê — mas é avisado que algo foi escrito)</label><textarea class="fc" id="f-gm_notes" style="border-color:#5a3a1a">${i?.gm_notes||''}</textarea></div>
       <div class="fg"><label>PIN do Jogador (opcional — protege a ficha na visão de jogador)</label><input class="fc" id="f-pin" placeholder="Deixe em branco para sem PIN" value="${i?.pin||''}"></div>`;
 
     if (type === 'npc') return `<h3>${i?'Editar':'Novo'} NPC</h3>
@@ -217,7 +218,7 @@ const Cards = {
         const v = row.querySelector('.stat-val').value.trim();
         if (k && v) stats[k] = v;
       });
-      return { name:getVal('f-name'), class:getVal('f-class'), universe:getVal('f-universe'), hp:+getVal('f-hp')||0, hp_max:+getVal('f-hp_max')||0, level:+getVal('f-level')||1, xp:+getVal('f-xp')||0, xp_next:+getVal('f-xp_next')||0, stats, notes:getVal('f-notes'), gm_notes:getVal('f-gm_notes'), ...(pin ? {pin} : {pin:''}) };
+      return { name:getVal('f-name'), class:getVal('f-class'), universe:getVal('f-universe'), hp:+getVal('f-hp')||0, hp_max:+getVal('f-hp_max')||0, level:+getVal('f-level')||1, xp:+getVal('f-xp')||0, xp_next:+getVal('f-xp_next')||0, stats, notes:getVal('f-notes'), gm_to_player_notes:getVal('f-gm_to_player_notes'), gm_notes:getVal('f-gm_notes'), ...(pin ? {pin} : {pin:''}) };
     }
     if (type === 'npc') return { name:getVal('f-name'), faction:getVal('f-faction'), universe:getVal('f-universe'), role:getVal('f-role'), attitude:getVal('f-attitude'), notes:getVal('f-notes') };
     if (type === 'creature') return { name:getVal('f-name'), universe:getVal('f-universe'), threat:getVal('f-threat'), hp:getVal('f-hp'), armor:getVal('f-armor'), damage:getVal('f-damage'), abilities:getVal('f-abilities') };

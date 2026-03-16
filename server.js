@@ -155,13 +155,27 @@ app.put('/api/gm/password', async (req, res) => {
 app.get('/api/db', (req, res) => res.json(readDB()));
 
 app.put('/api/db', (req, res) => {
-  writeDB(req.body);
+  const oldDb = readDB();
+  const newDb = req.body;
+  // Detect gm_notes / gm_to_player_notes changes → set unread flags for players
+  if (Array.isArray(newDb.pj) && Array.isArray(oldDb.pj)) {
+    newDb.pj.forEach(newPj => {
+      const oldPj = oldDb.pj.find(p => p.id === newPj.id);
+      if (!oldPj) return;
+      if (newPj.gm_notes !== oldPj.gm_notes && (newPj.gm_notes || '').trim())
+        newPj.gm_notes_unread = true;
+      if (newPj.gm_to_player_notes !== oldPj.gm_to_player_notes && (newPj.gm_to_player_notes || '').trim())
+        newPj.gm_to_player_unread = true;
+    });
+  }
+  writeDB(newDb);
   res.json({ ok: true });
 });
 
-// Player-facing: strips gm_notes so players never receive it
+// Player-facing: strips gm_notes but passes gm_to_player_notes + unread flags
 app.get('/api/player/data', (req, res) => {
   const db = readDB();
+  // eslint-disable-next-line no-unused-vars
   const pj = db.pj.map(({ gm_notes, ...rest }) => rest);
   res.json({ pj, pending_pj: db.pending_pj || [], location: db.location, worldMap: db.worldMap, universes: db.universes });
 });
@@ -203,10 +217,12 @@ app.patch('/api/player/pj/:id', (req, res) => {
   const db = readDB();
   const pj = db.pj.find(p => p.id === req.params.id);
   if (!pj) return res.status(404).json({ error: 'not found' });
-  if (req.body.hp            !== undefined) pj.hp            = req.body.hp;
-  if (req.body.notes         !== undefined) pj.notes         = req.body.notes;
-  if (req.body.private_notes !== undefined) pj.private_notes = req.body.private_notes;
-  if (req.body.inventory     !== undefined) pj.inventory     = req.body.inventory;
+  if (req.body.hp                   !== undefined) pj.hp                   = req.body.hp;
+  if (req.body.notes                !== undefined) pj.notes                = req.body.notes;
+  if (req.body.private_notes        !== undefined) pj.private_notes        = req.body.private_notes;
+  if (req.body.inventory            !== undefined) pj.inventory            = req.body.inventory;
+  if (req.body.gm_notes_unread      !== undefined) pj.gm_notes_unread      = req.body.gm_notes_unread;
+  if (req.body.gm_to_player_unread  !== undefined) pj.gm_to_player_unread  = req.body.gm_to_player_unread;
   writeDB(db);
   res.json({ ok: true });
 });
