@@ -103,7 +103,9 @@ app.get('/api/gm/active-players', (req, res) => {
     if (p.lastSeen < cutoff) continue;
     const pjData = db.pj.find(x => x.id === p.pjId) || {};
     players.push({
-      pjName: p.pjName, pjId: p.pjId, hp: p.hp, hpMax: p.hpMax,
+      pjName: p.pjName, pjId: p.pjId,
+      hp:    pjData.hp    !== undefined ? pjData.hp    : p.hp,
+      hpMax: pjData.hp_max !== undefined ? pjData.hp_max : p.hpMax,
       notes: pjData.notes,
       private_notes: pjData.private_notes,
       inventory: pjData.inventory,
@@ -178,7 +180,17 @@ app.get('/api/player/data', (req, res) => {
   const db = readDB();
   // eslint-disable-next-line no-unused-vars
   const pj = db.pj.map(({ gm_notes, ...rest }) => rest);
-  res.json({ pj, pending_pj: db.pending_pj || [], location: db.location, worldMap: db.worldMap, universes: db.universes, combat: db.combat || { list: [], round: 1, cur: 0 } });
+  const rawCombat = db.combat || { list: [], round: 1, cur: 0 };
+  const combat = {
+    ...rawCombat,
+    list: rawCombat.list.map(c => {
+      if (!c.pj_id) return c;
+      const pjRec = db.pj.find(p => p.id === c.pj_id);
+      if (!pjRec) return c;
+      return { ...c, name: pjRec.name, hp: pjRec.hp, hp_max: pjRec.hp_max };
+    })
+  };
+  res.json({ pj, pending_pj: db.pending_pj || [], location: db.location, worldMap: db.worldMap, universes: db.universes, combat });
 });
 
 // Player submits a character creation request

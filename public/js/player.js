@@ -36,6 +36,16 @@ const Player = {
     this._heartbeatTimer = setInterval(() => this._beat(), 8000);
     this._pollGmStatus();
     this._gmStatusTimer = setInterval(() => this._pollGmStatus(), 5000);
+    this._combatTimer   = setInterval(async () => {
+      if (!this.pj) return;
+      const r = await fetch('/api/player/data').catch(() => null);
+      if (!r) return;
+      const fresh = await r.json();
+      if (JSON.stringify(fresh.combat) !== JSON.stringify(this.db.combat)) {
+        this.db.combat = fresh.combat;
+        PCombat.render();
+      }
+    }, 3000);
   },
 
   stopHeartbeat() {
@@ -43,6 +53,8 @@ const Player = {
     this._heartbeatTimer = null;
     clearInterval(this._gmStatusTimer);
     this._gmStatusTimer = null;
+    clearInterval(this._combatTimer);
+    this._combatTimer = null;
   },
 
   async _pollGmStatus() {
@@ -862,6 +874,16 @@ const PlayerCreate = {
 // Player Combat HUD
 // =========================================================
 const PCombat = {
+  _hpColor(hp, hpMax) {
+    const pct = hpMax > 0 ? hp / hpMax * 100 : 100;
+    return pct > 50 ? '#27ae60' : pct > 25 ? '#f39c12' : '#e74c3c';
+  },
+
+  _hpBar(hp, hpMax, color) {
+    const pct = hpMax > 0 ? Math.max(0, hp / hpMax * 100) : 100;
+    return `<div class="pcombat-hp-bar"><div class="pcombat-hp-fill" style="width:${pct}%;background:${color};"></div></div>`;
+  },
+
   render() {
     const hud = document.getElementById('pcombat-hud');
     if (!hud) return;
@@ -873,61 +895,75 @@ const PCombat = {
       return;
     }
 
-    const myEntry    = combat.list.find(x => x.pj_id === Player.pj.id);
+    const myEntry     = combat.list.find(x => x.pj_id === Player.pj.id);
     const activeEntry = combat.list[combat.cur];
+    const players     = combat.list.filter(x => x.type === 'player');
+    const enemies     = combat.list.filter(x => x.type === 'enemy');
 
     if (!myEntry) {
-      // Combate ativo mas jogador não está nele
       hud.classList.add('active');
       hud.innerHTML = `
-        <div class="pcombat-notif">
+        <div class="pcombat-header">
           <span class="pcombat-notif-dot"></span>
-          <span>⚔️ <strong>Combate ativo</strong></span>
+          <span style="font-size:13px;">⚔️ <strong>Combate ativo</strong></span>
         </div>`;
-      document.getElementById('screen-player').style.paddingBottom = '52px';
+      document.getElementById('screen-player').style.paddingBottom = '44px';
       return;
     }
 
-    // Jogador está no combate
     const isMyTurn = activeEntry && activeEntry.id === myEntry.id;
-    const target   = myEntry.target_id ? combat.list.find(x => x.id === myEntry.target_id) : null;
 
-    const myPct     = myEntry.hp_max > 0 ? Math.max(0, myEntry.hp / myEntry.hp_max * 100) : 100;
-    const myHpColor = myPct > 50 ? '#27ae60' : myPct > 25 ? '#f39c12' : '#e74c3c';
+    const playerRow = x => {
+      const isMe    = x.id === myEntry.id;
+      const isTurn  = activeEntry && activeEntry.id === x.id;
+      const color   = this._hpColor(x.hp, x.hp_max);
+      return `<div class="pcombat-member${isMe ? ' pcombat-me' : ''}">
+        <div class="pcombat-member-name">${isTurn ? '▶ ' : ''}${isMe ? 'Você' : esc(x.name)}</div>
+        <div class="pcombat-member-hp" style="color:${color}">${x.hp}/${x.hp_max}</div>
+        ${this._hpBar(x.hp, x.hp_max, color)}
+        ${(x.conds||[]).length ? `<div class="pcombat-conds">${x.conds.map(c=>`<span class="pcombat-cond">${esc(c)}</span>`).join('')}</div>` : ''}
+      </div>`;
+    };
 
-    let targetHTML = '';
-    if (target) {
-      const tPct     = target.hp_max > 0 ? Math.max(0, target.hp / target.hp_max * 100) : 100;
-      const tHpColor = tPct > 50 ? '#27ae60' : tPct > 25 ? '#f39c12' : '#e74c3c';
-      targetHTML = `
-        <div class="pcombat-divider"></div>
-        <div class="pcombat-target">
-          <div class="pcombat-target-label">⚔️ Atacando</div>
-          <div class="pcombat-target-name">${esc(target.name)}</div>
-          <div class="pcombat-target-hp">
-            <span style="color:${tHpColor};font-weight:700;">${target.hp}</span>
-            <span style="color:var(--text2);font-size:11px;"> / ${target.hp_max}</span>
-          </div>
-          <div class="pcombat-hp-bar"><div class="pcombat-hp-fill" style="width:${tPct}%;background:${tHpColor};"></div></div>
-          ${(target.conds||[]).length ? `<div class="pcombat-conds">${target.conds.map(c=>`<span class="pcombat-cond">${esc(c)}</span>`).join('')}</div>` : ''}
-        </div>`;
-    }
+    const enemyRow = x => {
+      const isTarget = x.id === myEntry.target_id;
+      const isTurn   = activeEntry && activeEntry.id === x.id;
+      const color    = this._hpColor(x.hp, x.hp_max);
+      return `<div class="pcombat-member${isTarget ? ' pcombat-target-hl' : ''}">
+        <div class="pcombat-member-name">
+          ${isTurn ? '▶ ' : ''}${esc(x.name)}
+          ${isTarget ? '<span class="pcombat-mytarget">meu alvo</span>' : ''}
+        </div>
+        <div class="pcombat-member-hp" style="color:${color}">${x.hp}/${x.hp_max}</div>
+        ${this._hpBar(x.hp, x.hp_max, color)}
+        ${(x.conds||[]).length ? `<div class="pcombat-conds">${x.conds.map(c=>`<span class="pcombat-cond">${esc(c)}</span>`).join('')}</div>` : ''}
+      </div>`;
+    };
 
     hud.classList.add('active');
     hud.innerHTML = `
-      <div class="pcombat-main${isMyTurn ? ' my-turn' : ''}">
-        <div class="pcombat-round">Rodada ${combat.round}</div>
-        <div class="pcombat-turn${isMyTurn ? ' active' : ''}">
+      <div class="pcombat-header">
+        <span class="pcombat-round">Rodada ${combat.round}</span>
+        <span class="pcombat-turn-info${isMyTurn ? ' active' : ''}">
           ${isMyTurn ? '⚡ Seu turno!' : `Vez de: <strong>${esc(activeEntry ? activeEntry.name : '?')}</strong>`}
-        </div>
-        <div class="pcombat-my-hp">
-          Você: <span style="color:${myHpColor};font-weight:700;">${myEntry.hp}/${myEntry.hp_max}</span>
-          ${myEntry.init != null ? `<span style="color:var(--text2);font-size:11px;"> · Init ${myEntry.init}</span>` : ''}
-          ${(myEntry.conds||[]).length ? `<div class="pcombat-conds" style="margin-top:3px;">${myEntry.conds.map(c=>`<span class="pcombat-cond">${esc(c)}</span>`).join('')}</div>` : ''}
-        </div>
+        </span>
       </div>
-      ${targetHTML}`;
-    document.getElementById('screen-player').style.paddingBottom = '68px';
+      <div class="pcombat-groups">
+        <div class="pcombat-group">
+          <div class="pcombat-group-label">👥 Seu Grupo</div>
+          ${players.map(playerRow).join('')}
+        </div>
+        ${enemies.length ? `
+        <div class="pcombat-divider"></div>
+        <div class="pcombat-group">
+          <div class="pcombat-group-label">⚔️ Inimigos</div>
+          ${enemies.map(enemyRow).join('')}
+        </div>` : ''}
+      </div>`;
+
+    requestAnimationFrame(() => {
+      document.getElementById('screen-player').style.paddingBottom = hud.offsetHeight + 'px';
+    });
   }
 };
 

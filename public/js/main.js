@@ -64,12 +64,18 @@ const App = {
           if (changed.length) Presence.notifyChanges(changed);
         }
 
-        // Sincroniza HP dos PJs vinculados ao combate (sem salvar — evita loop)
+        // Detecta se dados de combate mudaram (antes de atualizar this.db)
+        const combatChanged = JSON.stringify(fresh.combat) !== JSON.stringify(this.db.combat);
+
+        // Sincroniza nome, HP e HP máximo dos PJs vinculados ao combate (sem salvar — evita loop)
         if (fresh.combat && fresh.pj) {
           fresh.combat.list.forEach(c => {
             if (!c.pj_id) return;
             const pj = fresh.pj.find(p => p.id === c.pj_id);
-            if (pj) c.hp = pj.hp;
+            if (!pj) return;
+            c.hp     = pj.hp;
+            c.hp_max = parseInt(pj.hp_max) || c.hp_max;
+            c.name   = pj.name || c.name;
           });
         }
 
@@ -77,7 +83,13 @@ const App = {
         this.db = fresh;
         Requests.updateBadge();
 
-        // Guards aplicados apenas ao re-render da view do GM (evita loop nos próprios saves)
+        // Re-render de combate sempre que os dados mudaram, independente dos guards
+        if (combatChanged) {
+          const activeNav = document.querySelector('.nav-item.active');
+          if (activeNav && activeNav.dataset.s === 'combat') Combat.render();
+        }
+
+        // Guards aplicados apenas ao re-render geral da view do GM (evita loop nos próprios saves)
         if (document.getElementById('overlay').classList.contains('open')) return;
         if (this._saveTimer) return;
         if (this._lastSaveTime && Date.now() - this._lastSaveTime < 1500) return;
@@ -211,6 +223,11 @@ const App = {
     if (id) {
       const idx = this.db[type].findIndex(x => x.id === id);
       if (idx >= 0) this.db[type][idx] = { ...this.db[type][idx], ...item };
+      // Sincroniza nome e HP máximo na entrada de combate vinculada
+      if (type === 'pj') {
+        const ce = this.db.combat.list.find(c => c.pj_id === id);
+        if (ce) { ce.name = item.name || ce.name; ce.hp_max = parseInt(item.hp_max) || ce.hp_max; }
+      }
     } else {
       item.id = this._pendingApprovalId || uid();
       if (this._pendingApprovalId) {
