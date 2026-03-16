@@ -90,6 +90,7 @@ const App = {
   // ---- Navegação ----
   setupNav() {
     document.querySelectorAll('.nav-item').forEach(el => {
+      if (!el.dataset.s) return;
       el.addEventListener('click', () => {
         document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
         document.querySelectorAll('.section').forEach(x => x.classList.remove('active'));
