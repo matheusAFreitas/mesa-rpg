@@ -55,6 +55,41 @@ body::before{
 .role-card .label{font-size:13px;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:2px;}
 .role-card .sub{font-size:10px;color:var(--text2);font-family:var(--fm);letter-spacing:1px;}
 
+/* Player link banner */
+.player-link{
+  margin-top:40px;
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:2px;
+  padding:16px 20px;
+  position:relative;
+}
+.player-link::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(to right,transparent,var(--accent) 30%,var(--accent) 70%,transparent);
+  opacity:0.5;
+}
+.player-link-label{
+  font-size:9px;text-transform:uppercase;letter-spacing:2px;
+  color:var(--text2);font-family:var(--fm);margin-bottom:10px;
+}
+.player-link-row{display:flex;align-items:center;gap:10px;}
+.player-link-url{
+  flex:1;font-family:var(--fm);font-size:15px;
+  color:var(--accent);letter-spacing:1px;
+  text-decoration:none;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.player-link-url:hover{text-decoration:underline;}
+.copy-btn{
+  padding:5px 12px;border:1px solid var(--border);border-radius:2px;
+  background:var(--bg3);color:var(--text2);cursor:pointer;
+  font-size:10px;font-family:var(--fm);letter-spacing:1px;
+  text-transform:uppercase;transition:all .15s;white-space:nowrap;flex-shrink:0;
+}
+.copy-btn:hover{border-color:var(--accent);color:var(--accent);}
+.copy-btn.copied{border-color:var(--ok);color:var(--ok);}
+
 /* Modal */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:100;align-items:center;justify-content:center;}
 .overlay.open{display:flex;}
@@ -106,6 +141,14 @@ body::before{
       <div class="label">Jogador</div>
       <div class="sub">Ver minha ficha</div>
     </a>
+  </div>
+
+  <div class="player-link" id="player-link" style="display:none;">
+    <div class="player-link-label">Link para jogadores</div>
+    <div class="player-link-row">
+      <a class="player-link-url" id="player-url" href="#" target="_blank"></a>
+      <button class="copy-btn" id="copy-btn" onclick="copyLink()">Copiar</button>
+    </div>
   </div>
 </div>
 
@@ -183,6 +226,26 @@ document.getElementById('pw-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') GM.submit();
   if (e.key === 'Escape') GM.close();
 });
+
+// Exibe link da rede local para jogadores
+fetch('/api/local-ip').then(r => r.json()).then(({ ip, port }) => {
+  if (!ip) return;
+  const url = `http://${ip}:${port}/jogador`;
+  const el = document.getElementById('player-url');
+  el.textContent = url;
+  el.href = url;
+  document.getElementById('player-link').style.display = 'block';
+}).catch(() => {});
+
+function copyLink() {
+  const url = document.getElementById('player-url').textContent;
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copiado!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('copied'); }, 2000);
+  });
+}
 </script>
 </body>
 </html>

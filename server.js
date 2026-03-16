@@ -1,5 +1,6 @@
 const express = require('express');
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const bcrypt = require('bcrypt');
 
@@ -153,6 +154,18 @@ app.put('/api/gm/password', async (req, res) => {
   db.gm_password = await bcrypt.hash(newPassword.trim(), BCRYPT_ROUNDS);
   writeDB(db);
   res.json({ ok: true });
+});
+
+app.get('/api/local-ip', (req, res) => {
+  const nets = os.networkInterfaces();
+  let ip = null;
+  for (const iface of Object.values(nets)) {
+    for (const addr of iface) {
+      if (addr.family === 'IPv4' && !addr.internal) { ip = addr.address; break; }
+    }
+    if (ip) break;
+  }
+  res.json({ ip, port: PORT });
 });
 
 app.get('/api/db', (req, res) => res.json(readDB()));
