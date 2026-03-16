@@ -8,6 +8,9 @@
 </head>
 <body>
 
+<button id="menu-toggle" onclick="SidebarMenu.toggle()" aria-label="Menu">☰</button>
+<div id="sidebar-backdrop" onclick="SidebarMenu.close()"></div>
+
 <nav id="sidebar">
   <div class="logo">
     <h1>Mesa do Mestre</h1>
@@ -100,6 +103,22 @@ document.addEventListener('keydown', e => {
   beat();
   setInterval(beat, 8000);
 })();
+
+const SidebarMenu = {
+  toggle() {
+    const open = document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('sidebar-backdrop').classList.toggle('open', open);
+  },
+  close() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebar-backdrop').classList.remove('open');
+  }
+};
+
+// Fecha sidebar ao navegar (mobile)
+document.querySelectorAll('.nav-item').forEach(el => {
+  el.addEventListener('click', () => SidebarMenu.close());
+});
 </script>
 
 <main id="main">
