@@ -52,6 +52,10 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 .player-header{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:14px;flex-shrink:0;}
 .player-header .char-name{font-size:15px;font-weight:600;flex:1;}
 .player-header .char-meta{font-size:12px;color:var(--text2);}
+.gm-status-badge{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2);white-space:nowrap;padding:3px 8px;border-radius:10px;background:var(--bg3);border:1px solid var(--border);}
+.gm-status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;transition:background .4s;}
+.gm-status-dot.online{background:#27ae60;}
+.gm-status-dot.offline{background:var(--danger);animation:blink 1.4s ease-in-out infinite;}
 .tab-nav{display:flex;gap:2px;}
 .tab-btn{padding:6px 14px;border:none;background:transparent;color:var(--text2);font-size:13px;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;}
 .tab-btn:hover{color:var(--text);}
@@ -121,6 +125,8 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 /* ---- PENDING SCREEN ---- */
 #screen-pending{display:none;align-items:center;justify-content:center;min-height:100vh;}
 .pending-box{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:40px 32px;text-align:center;max-width:380px;}
+
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.25;}}
 .pending-box .pi{font-size:40px;margin-bottom:16px;}
 .pending-box h2{font-size:16px;margin-bottom:6px;}
 .pending-box p{font-size:13px;color:var(--text2);margin-bottom:6px;}
@@ -232,7 +238,11 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
       <button class="tab-btn active" onclick="Player.showTab('ficha')" id="tbtn-ficha">Ficha</button>
       <button class="tab-btn" onclick="Player.showTab('mapa')" id="tbtn-mapa">Mapa</button>
     </div>
-    <button class="btn btn-secondary btn-sm" onclick="Player.logout()" style="margin-left:auto">Trocar</button>
+    <div class="gm-status-badge" id="gm-status-badge" style="margin-left:auto">
+      <span class="gm-status-dot offline" id="gm-status-dot"></span>
+      <span id="gm-status-label">Mestre offline</span>
+    </div>
+    <button class="btn btn-secondary btn-sm" onclick="Player.logout()">Trocar</button>
   </div>
   <div class="player-body">
     <!-- FICHA TAB -->
@@ -268,6 +278,7 @@ const Player = {
   _hpDelta: 1,
   _sessionId: 'ps-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
   _heartbeatTimer: null,
+  _gmStatusTimer: null,
 
   _beat() {
     if (!this.pj) return;
@@ -288,11 +299,27 @@ const Player = {
     this.stopHeartbeat();
     this._beat();
     this._heartbeatTimer = setInterval(() => this._beat(), 8000);
+    this._pollGmStatus();
+    this._gmStatusTimer = setInterval(() => this._pollGmStatus(), 5000);
   },
 
   stopHeartbeat() {
     clearInterval(this._heartbeatTimer);
     this._heartbeatTimer = null;
+    clearInterval(this._gmStatusTimer);
+    this._gmStatusTimer = null;
+  },
+
+  async _pollGmStatus() {
+    try {
+      const r = await fetch('/api/gm/status');
+      const { online } = await r.json();
+      const dot   = document.getElementById('gm-status-dot');
+      const label = document.getElementById('gm-status-label');
+      if (!dot) return;
+      dot.className   = 'gm-status-dot ' + (online ? 'online' : 'offline');
+      label.textContent = online ? 'Mestre online' : 'Mestre offline';
+    } catch (e) {}
   },
 
   async init() {

@@ -93,6 +93,13 @@ const PwChange = {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && document.getElementById('pw-overlay').style.display === 'flex') PwChange.close();
 });
+
+// GM heartbeat — informa ao servidor que o Mestre está online
+(function() {
+  function beat() { fetch('/api/gm/heartbeat', { method: 'POST' }).catch(() => {}); }
+  beat();
+  setInterval(beat, 8000);
+})();
 </script>
 
 <main id="main">

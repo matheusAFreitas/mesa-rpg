@@ -33,6 +33,10 @@ const sseClients = new Set();
 const activePlayers = new Map();
 const PLAYER_TTL_MS = 20000;
 
+// ---- Presença do GM (in-memory) ----
+let gmLastSeen = 0;
+const GM_TTL_MS = 12000;
+
 setInterval(() => {
   const cutoff = Date.now() - PLAYER_TTL_MS;
   for (const [sid, p] of activePlayers) {
@@ -69,6 +73,17 @@ app.get('/api/events', (req, res) => {
   // Heartbeat a cada 25s para manter a conexão viva
   const hb = setInterval(() => res.write(': ping\n\n'), 25000);
   req.on('close', () => { sseClients.delete(res); clearInterval(hb); });
+});
+
+// Heartbeat do GM — registra presença
+app.post('/api/gm/heartbeat', (req, res) => {
+  gmLastSeen = Date.now();
+  res.json({ ok: true });
+});
+
+// Status do GM — jogadores consultam isso
+app.get('/api/gm/status', (req, res) => {
+  res.json({ online: (Date.now() - gmLastSeen) < GM_TTL_MS });
 });
 
 // Heartbeat do jogador — registra presença
