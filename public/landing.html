@@ -4,36 +4,90 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mesa do Mestre</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0d0d0d;--bg2:#161616;--bg3:#1e1e1e;--border:#2a2a2a;--accent:#c0392b;--text:#e0e0e0;--text2:#888;--ok:#27ae60;--danger:#e74c3c;}
+:root{
+  --bg:#030504;--bg2:#06100A;--bg3:#0C1A0D;--border:#112810;
+  --accent:#3EC96D;--text:#B8D8B0;--text2:#5E9654;
+  --ok:#5AB845;--danger:#B03010;
+  --ff:'Chakra Petch',system-ui,sans-serif;
+  --fm:'Share Tech Mono','Courier New',monospace;
+}
 *{box-sizing:border-box;margin:0;padding:0;}
-body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:var(--ff);min-height:100vh;
+  display:flex;align-items:center;justify-content:center;
+}
+body::before{
+  content:'';position:fixed;inset:0;
+  background:repeating-linear-gradient(to bottom,transparent 0px,transparent 2px,rgba(0,0,0,0.07) 2px,rgba(0,0,0,0.07) 3px);
+  pointer-events:none;z-index:9999;
+}
 
 .landing{text-align:center;width:100%;max-width:480px;padding:40px 24px;}
-.landing h1{font-size:28px;letter-spacing:4px;text-transform:uppercase;color:var(--accent);margin-bottom:6px;}
-.landing p{color:var(--text2);font-size:13px;margin-bottom:48px;}
+.landing h1{
+  font-size:22px;letter-spacing:6px;text-transform:uppercase;
+  color:var(--accent);margin-bottom:6px;
+  font-family:var(--fm);
+  text-shadow:0 0 24px rgba(62,201,109,0.55);
+}
+.landing p{color:var(--text2);font-size:10px;margin-bottom:48px;font-family:var(--fm);letter-spacing:2px;text-transform:uppercase;}
 
 .cards{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
-.role-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:32px 28px;cursor:pointer;transition:border-color .15s,transform .12s;width:190px;text-decoration:none;color:var(--text);}
-.role-card:hover{border-color:var(--accent);transform:translateY(-3px);}
-.role-card .icon{font-size:36px;margin-bottom:12px;}
-.role-card .label{font-size:15px;font-weight:600;margin-bottom:4px;}
-.role-card .sub{font-size:12px;color:var(--text2);}
+.role-card{
+  background:var(--bg2);border:1px solid var(--border);
+  padding:32px 28px;cursor:pointer;
+  transition:border-color .15s,transform .12s,box-shadow .15s;
+  width:190px;text-decoration:none;color:var(--text);
+  position:relative;border-radius:2px;
+}
+.role-card::before,.role-card::after{
+  content:'';position:absolute;width:10px;height:10px;
+  border-color:var(--accent);border-style:solid;opacity:0;transition:opacity .2s;
+}
+.role-card::before{top:-1px;left:-1px;border-width:2px 0 0 2px;}
+.role-card::after{bottom:-1px;right:-1px;border-width:0 2px 2px 0;}
+.role-card:hover{border-color:rgba(62,201,109,0.35);transform:translateY(-3px);box-shadow:0 6px 24px rgba(62,201,109,0.1);}
+.role-card:hover::before,.role-card:hover::after{opacity:1;}
+.role-card .icon{font-size:32px;margin-bottom:12px;}
+.role-card .label{font-size:13px;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:2px;}
+.role-card .sub{font-size:10px;color:var(--text2);font-family:var(--fm);letter-spacing:1px;}
 
 /* Modal */
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;align-items:center;justify-content:center;}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:100;align-items:center;justify-content:center;}
 .overlay.open{display:flex;}
-.modal{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:28px;width:320px;}
-.modal h3{font-size:15px;margin-bottom:6px;}
-.modal p{font-size:12px;color:var(--text2);margin-bottom:18px;line-height:1.5;}
-.modal input{width:100%;padding:9px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:14px;letter-spacing:2px;margin-bottom:6px;}
-.modal input:focus{outline:none;border-color:var(--accent);}
-.error{color:var(--danger);font-size:12px;min-height:16px;margin-bottom:10px;}
+.modal{
+  background:var(--bg2);border:1px solid var(--border);
+  padding:28px;width:320px;
+  position:relative;border-radius:2px;
+}
+.modal::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(to right,transparent,var(--accent) 30%,var(--accent) 70%,transparent);
+  opacity:0.7;
+}
+.modal h3{font-size:12px;margin-bottom:6px;text-transform:uppercase;letter-spacing:2px;color:var(--accent);font-family:var(--fm);}
+.modal p{font-size:11px;color:var(--text2);margin-bottom:18px;line-height:1.6;font-family:var(--fm);letter-spacing:.5px;}
+.modal input{
+  width:100%;padding:9px 12px;background:var(--bg3);
+  border:1px solid var(--border);border-radius:2px;
+  color:var(--accent);font-size:16px;letter-spacing:4px;
+  margin-bottom:6px;font-family:var(--fm);
+}
+.modal input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 10px rgba(62,201,109,0.12);}
+.error{color:var(--danger);font-size:11px;min-height:16px;margin-bottom:10px;font-family:var(--fm);letter-spacing:.5px;}
 .modal-btns{display:flex;gap:8px;justify-content:flex-end;}
-.btn{padding:7px 16px;border:none;border-radius:4px;cursor:pointer;font-size:13px;font-weight:500;transition:opacity .15s;}
-.btn:hover{opacity:.82;}
-.btn-primary{background:var(--accent);color:#fff;}
-.btn-secondary{background:var(--bg3);color:var(--text);border:1px solid var(--border);}
+.btn{
+  padding:7px 16px;border:1px solid transparent;border-radius:2px;
+  cursor:pointer;font-size:11px;font-weight:600;
+  font-family:var(--ff);letter-spacing:1.2px;text-transform:uppercase;
+  transition:all .15s;
+}
+.btn:hover{opacity:.85;filter:brightness(1.08);}
+.btn-primary{background:var(--accent);color:#0A0805;border-color:var(--accent);}
+.btn-secondary{background:var(--bg3);color:var(--text);border-color:var(--border);}
 </style>
 </head>
 <body>
@@ -67,7 +121,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
       <button class="btn btn-primary" id="pw-btn" onclick="GM.submit()">Entrar</button>
     </div>
     <div id="reset-wrap" style="text-align:center;margin-top:14px;display:none;">
-      <button onclick="GM.resetPassword()" style="background:none;border:none;color:#888;font-size:12px;cursor:pointer;text-decoration:underline;">Esqueci a senha — resetar acesso</button>
+      <button onclick="GM.resetPassword()" style="background:none;border:none;color:var(--text2);font-size:11px;cursor:pointer;text-decoration:underline;font-family:var(--fm);letter-spacing:.5px;">Esqueci a senha — resetar acesso</button>
     </div>
   </div>
 </div>
