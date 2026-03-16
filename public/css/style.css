@@ -7,8 +7,8 @@
   --border:   #28240E;
   --accent:   #D4921A;
   --accent-lo:#8A5C08;
-  --text:     #C4B47A;
-  --text2:    #5A5020;
+  --text:     #D8CC96;
+  --text2:    #9A8848;
   --ok:       #4A8C35;
   --warn:     #C07818;
   --danger:   #B03010;
@@ -729,13 +729,13 @@ textarea.fc { min-height: 75px; resize: vertical; }
   font-size: 9px;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: #3A3010;
+  color: #6A5C28;
 }
-#presence-hud[data-online="1"] .presence-label { color: #6A5820; }
+#presence-hud[data-online="1"] .presence-label { color: #9A8040; }
 .presence-count {
   font-size: 17px;
   font-weight: 700;
-  color: #2A2410;
+  color: #5A5020;
   line-height: 1;
   min-width: 20px;
   text-align: right;
@@ -750,7 +750,7 @@ textarea.fc { min-height: 75px; resize: vertical; }
 .presence-toggle {
   background: none;
   border: none;
-  color: #3A3010;
+  color: #6A5C28;
   cursor: pointer;
   font-size: 14px;
   line-height: 1;
@@ -784,7 +784,7 @@ textarea.fc { min-height: 75px; resize: vertical; }
   flex: 1;
   min-width: 0;
 }
-.presence-empty { font-size: 11px; color: #2A2410; letter-spacing: 1px; padding: 2px 0 1px; }
+.presence-empty { font-size: 11px; color: #5A5020; letter-spacing: 1px; padding: 2px 0 1px; }
 .presence-hp { font-size: 11px; color: #C04030; flex-shrink: 0; font-variant-numeric: tabular-nums; }
 .presence-icons { margin-left: auto; display: flex; gap: 5px; flex-shrink: 0; align-items: center; }
 .chg-icon { font-size: 14px; line-height: 1; cursor: default; opacity: 0.12; transition: opacity .35s; }
