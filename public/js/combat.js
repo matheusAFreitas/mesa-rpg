@@ -68,11 +68,18 @@ const Combat = {
     App.save(); this.render();
   },
 
+  _syncHpToPj(x) {
+    if (!x.pj_id) return;
+    const pj = App.db.pj.find(p => p.id === x.pj_id);
+    if (pj) pj.hp = x.hp;
+  },
+
   applyDmg(id) {
     const x = App.db.combat.list.find(c => c.id === id);
     if (!x) return;
     const v = parseInt(document.getElementById('hd-'+id).value) || 0;
     x.hp = Math.max(0, x.hp - v);
+    this._syncHpToPj(x);
     App.save(); this.render();
   },
 
@@ -81,6 +88,7 @@ const Combat = {
     if (!x) return;
     const v = parseInt(document.getElementById('hd-'+id).value) || 0;
     x.hp = Math.min(x.hp_max || 999, x.hp + v);
+    this._syncHpToPj(x);
     App.save(); this.render();
   },
 

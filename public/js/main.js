@@ -64,6 +64,15 @@ const App = {
           if (changed.length) Presence.notifyChanges(changed);
         }
 
+        // Sincroniza HP dos PJs vinculados ao combate (sem salvar — evita loop)
+        if (fresh.combat && fresh.pj) {
+          fresh.combat.list.forEach(c => {
+            if (!c.pj_id) return;
+            const pj = fresh.pj.find(p => p.id === c.pj_id);
+            if (pj) c.hp = pj.hp;
+          });
+        }
+
         // Atualiza o db local antes dos guards para que o poll() tenha dados frescos
         this.db = fresh;
         Requests.updateBadge();
@@ -227,9 +236,17 @@ const App = {
   addToCombat(type, srcId) {
     const src = this.db[type].find(x => x.id === srcId);
     if (!src) return;
+    const isPj = type === 'pj';
+    // Evita duplicata de PJ vinculado
+    if (isPj && this.db.combat.list.some(c => c.pj_id === srcId)) {
+      alert(`${src.name} já está no combate.`); return;
+    }
     this.db.combat.list.push({
-      id: uid(), name: src.name, type: 'enemy',
-      hp: parseInt(src.hp) || 10, hp_max: parseInt(src.hp) || 10,
+      id: uid(), name: src.name,
+      type: isPj ? 'player' : 'enemy',
+      pj_id: isPj ? srcId : undefined,
+      hp: parseInt(src.hp) || 10,
+      hp_max: parseInt(isPj ? src.hp_max : src.hp) || 10,
       init: null, conds: []
     });
     this.save();

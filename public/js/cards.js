@@ -68,7 +68,7 @@ const Cards = {
     const uStyle = App.tagStyle(i.universe);
     const editBtn = `<button class="btn btn-secondary btn-sm" onclick="App.openModal('${type}','${i.id}')">✏</button>`;
     const delBtn  = `<button class="btn btn-danger btn-sm" onclick="App.deleteItem('${type}','${i.id}')">✕</button>`;
-    const combatBtn = (type==='creature'||type==='npc')
+    const combatBtn = (type==='creature'||type==='npc'||type==='pj')
       ? `<button class="btn btn-ok btn-sm" title="Adicionar ao combate" onclick="App.addToCombat('${type}','${i.id}')">⚔</button>` : '';
     const acts = `<div class="card-actions">${editBtn}${delBtn}${combatBtn}</div>`;
 
