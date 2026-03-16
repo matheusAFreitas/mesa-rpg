@@ -56,6 +56,66 @@
   </div>
 </div>
 
+<!-- Modal purge sessão -->
+<div class="overlay" id="purge-overlay" onclick="if(event.target===this)Purge.close()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:200;align-items:center;justify-content:center;">
+  <div style="background:#161616;border:1px solid #3a1111;border-radius:8px;padding:28px;width:340px;">
+    <h3 style="font-size:15px;margin-bottom:8px;color:#e74c3c;">⚠️ Purge — Apagar Tudo</h3>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:16px;line-height:1.5;">
+      Esta ação irá apagar <strong style="color:#e0e0e0;">todos os dados</strong> da sessão de RPG: PJs, NPCs, criaturas, locais, sessões, combate e mapas. <strong style="color:#e74c3c;">Esta ação é irreversível.</strong>
+    </p>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:6px;">
+      <input id="purge-password" type="password" placeholder="Sua senha de acesso" style="padding:9px 12px;background:#1e1e1e;border:1px solid #3a1111;border-radius:4px;color:#e0e0e0;font-size:13px;">
+    </div>
+    <div id="purge-error" style="color:#e74c3c;font-size:12px;min-height:18px;margin-bottom:10px;"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button onclick="Purge.close()" style="padding:7px 14px;background:#1e1e1e;border:1px solid #2a2a2a;border-radius:4px;color:#e0e0e0;cursor:pointer;font-size:13px;">Cancelar</button>
+      <button onclick="Purge.submit()" style="padding:7px 14px;background:#c0392b;border:none;border-radius:4px;color:#fff;cursor:pointer;font-size:13px;font-weight:500;">Confirmar Purge</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const Purge = {
+  open() {
+    document.getElementById('purge-password').value = '';
+    document.getElementById('purge-error').textContent = '';
+    const el = document.getElementById('purge-overlay');
+    el.style.display = 'flex';
+    setTimeout(() => document.getElementById('purge-password').focus(), 50);
+  },
+  close() {
+    document.getElementById('purge-overlay').style.display = 'none';
+  },
+  async submit() {
+    const password = document.getElementById('purge-password').value;
+    const err = document.getElementById('purge-error');
+    if (!password.trim()) { err.textContent = 'Digite sua senha para confirmar.'; return; }
+    const res = await fetch('/api/db', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      this.close();
+      location.reload();
+    } else if (data.error === 'wrong') {
+      err.textContent = 'Senha incorreta.';
+      document.getElementById('purge-password').value = '';
+      document.getElementById('purge-password').focus();
+    } else if (data.error === 'no_password') {
+      err.textContent = 'Nenhuma senha configurada. Defina uma senha primeiro.';
+    } else {
+      err.textContent = 'Erro ao executar purge.';
+    }
+  }
+};
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.getElementById('purge-overlay').style.display === 'flex') Purge.close();
+});
+</script>
+
 <script>
 const PwChange = {
   open() {
@@ -154,6 +214,7 @@ document.querySelectorAll('.nav-item').forEach(el => {
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
             <button class="btn btn-secondary" onclick="Dashboard.exportDB()">⬇ Exportar DB</button>
             <button class="btn btn-secondary" onclick="Dashboard.importDB()">⬆ Importar DB</button>
+            <button class="btn btn-danger" onclick="Purge.open()">🗑 Purge</button>
           </div>
           <input type="file" id="import-file" accept=".json" style="display:none" onchange="Dashboard._onImportFile(this)">
         </div>
