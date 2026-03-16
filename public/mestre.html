@@ -303,6 +303,19 @@ document.addEventListener('keydown', e => {
   <div class="modal" id="modal-body"></div>
 </div>
 
+<!-- PRESENCE HUD -->
+<div id="presence-hud" data-online="0" data-collapsed="0">
+  <div class="presence-header">
+    <span class="presence-signal"></span>
+    <span class="presence-label">Jogadores</span>
+    <span class="presence-count">0</span>
+    <button class="presence-toggle" onclick="Presence.toggle()">−</button>
+  </div>
+  <div class="presence-list">
+    <div class="presence-empty">aguardando jogadores…</div>
+  </div>
+</div>
+
 <script src="/js/api.js"></script>
 <script src="/js/helpers.js"></script>
 <script src="/js/requests.js"></script>
@@ -315,5 +328,6 @@ document.addEventListener('keydown', e => {
 <script src="/js/map-world.js"></script>
 <script src="/js/map-dungeon.js"></script>
 <script src="/js/universes.js"></script>
+<script src="/js/presence.js"></script>
 </body>
 </html>

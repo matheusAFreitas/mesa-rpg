@@ -266,6 +266,24 @@ const Player = {
   _notesTimer: null,
   _privateNotesTimer: null,
   _hpDelta: 1,
+  _sessionId: 'ps-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+  _heartbeatTimer: null,
+
+  startHeartbeat(pj) {
+    this.stopHeartbeat();
+    const beat = () => fetch('/api/player/heartbeat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId: this._sessionId, pjName: pj.name, pjId: pj.id })
+    }).catch(() => {});
+    beat();
+    this._heartbeatTimer = setInterval(beat, 15000);
+  },
+
+  stopHeartbeat() {
+    clearInterval(this._heartbeatTimer);
+    this._heartbeatTimer = null;
+  },
 
   async init() {
     const res = await fetch('/api/player/data');
@@ -457,9 +475,11 @@ const Player = {
     this.showTab('ficha');
     this.renderFicha();
     PMap.init(this.db);
+    this.startHeartbeat(pj);
   },
 
   logout() {
+    this.stopHeartbeat();
     this.pj = null;
     document.getElementById('screen-select').style.display = '';
     document.getElementById('screen-player').classList.remove('active');
@@ -958,6 +978,9 @@ const PlayerCreate = {
 document.getElementById('pin-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') Player.confirmPin();
 });
+
+// Para o heartbeat ao fechar a aba
+window.addEventListener('beforeunload', () => Player.stopHeartbeat());
 
 Player.init();
 </script>

@@ -29,6 +29,17 @@ function readDB() {
 
 const sseClients = new Set();
 
+// ---- Presença de jogadores (in-memory, reseta com o servidor) ----
+const activePlayers = new Map();
+const PLAYER_TTL_MS = 35000;
+
+setInterval(() => {
+  const cutoff = Date.now() - PLAYER_TTL_MS;
+  for (const [sid, p] of activePlayers) {
+    if (p.lastSeen < cutoff) activePlayers.delete(sid);
+  }
+}, 20000);
+
 function broadcastUpdate() {
   for (const client of sseClients) client.write('data: update\n\n');
 }
@@ -58,6 +69,24 @@ app.get('/api/events', (req, res) => {
   // Heartbeat a cada 25s para manter a conexão viva
   const hb = setInterval(() => res.write(': ping\n\n'), 25000);
   req.on('close', () => { sseClients.delete(res); clearInterval(hb); });
+});
+
+// Heartbeat do jogador — registra presença
+app.post('/api/player/heartbeat', (req, res) => {
+  const { sessionId, pjName, pjId } = req.body;
+  if (!sessionId) return res.json({ ok: false });
+  activePlayers.set(sessionId, { pjName: pjName || 'Jogador', pjId, lastSeen: Date.now() });
+  res.json({ ok: true });
+});
+
+// Lista de jogadores ativos para o GM
+app.get('/api/gm/active-players', (req, res) => {
+  const cutoff = Date.now() - PLAYER_TTL_MS;
+  const players = [];
+  for (const [, p] of activePlayers) {
+    if (p.lastSeen >= cutoff) players.push({ pjName: p.pjName, pjId: p.pjId });
+  }
+  res.json({ players });
 });
 
 // GM auth
