@@ -42,11 +42,12 @@ const Requests = {
     App.openModal('pj', null, pending);
   },
 
-  async reject(id) {
-    if (!confirm('Rejeitar e remover esta solicitação?')) return;
-    await fetch(`/api/gm/pending/${id}`, { method: 'DELETE' });
-    App.db = await Api.load();
-    this.render();
+  reject(id) {
+    Dialog.confirm('Rejeitar e remover esta solicitação?', async () => {
+      await fetch(`/api/gm/pending/${id}`, { method: 'DELETE' });
+      App.db = await Api.load();
+      this.render();
+    });
   },
 
   updateBadge() {

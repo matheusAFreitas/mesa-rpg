@@ -227,10 +227,13 @@ const App = {
 
   // ---- CRUD ----
   deleteItem(type, id) {
-    if (!confirm('Remover este item?')) return;
-    this.db[type] = this.db[type].filter(x => x.id !== id);
-    this.save();
-    this.render(document.querySelector('.nav-item.active').dataset.s);
+    const item  = this.db[type].find(x => x.id === id);
+    const label = item?.title || item?.name || 'este item';
+    Dialog.confirm(`Remover <strong>${esc(label)}</strong>?`, () => {
+      this.db[type] = this.db[type].filter(x => x.id !== id);
+      this.save();
+      this.render(document.querySelector('.nav-item.active').dataset.s);
+    });
   },
 
   addToCombat(type, srcId) {

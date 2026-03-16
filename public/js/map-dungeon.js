@@ -236,16 +236,16 @@ const DungeonMap = {
       const existing = d.tokens.find(t => t.x === cell.x && t.y === cell.y);
       if (existing) {
         d.tokens = d.tokens.filter(t => t !== existing);
+      } else if (this.activeToken.id === 'custom') {
+        Dialog.prompt('Nome do token:', 'Token', name => {
+          const n = name.trim() || 'Token';
+          d.tokens.push({ id: uid(), name: n, symbol: n[0].toUpperCase(), color: '#888', x: cell.x, y: cell.y });
+          this._dirty = true;
+          App.save();
+        }, { placeholder: 'Token' });
+        return;
       } else {
-        // Custom token: ask for name/symbol
-        let tok = { ...this.activeToken, x: cell.x, y: cell.y };
-        if (this.activeToken.id === 'custom') {
-          const name = prompt('Nome do token:', 'Token') || 'Token';
-          tok = { id: uid(), name, symbol: name[0].toUpperCase(), color: '#888', x: cell.x, y: cell.y };
-        } else {
-          tok = { ...this.activeToken, id: uid(), x: cell.x, y: cell.y };
-        }
-        d.tokens.push(tok);
+        d.tokens.push({ ...this.activeToken, id: uid(), x: cell.x, y: cell.y });
       }
     } else if (this.activeTile) {
       this.activeDungeon.grid[cell.y][cell.x] = this.activeTile;
@@ -358,13 +358,14 @@ const DungeonMap = {
 
   deleteDungeon() {
     if (!this.activeDungeon) return;
-    if (!confirm(`Excluir "${this.activeDungeon.name}"?`)) return;
-    App.db.dungeons = App.db.dungeons.filter(d => d.id !== this.activeDungeon.id);
-    App.save();
-    this.activeDungeon = null;
-    this.renderDungeonList();
-    this.selectDungeon(null);
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    Dialog.confirm(`Excluir <strong>${esc(this.activeDungeon.name)}</strong>?`, () => {
+      App.db.dungeons = App.db.dungeons.filter(d => d.id !== this.activeDungeon.id);
+      App.save();
+      this.activeDungeon = null;
+      this.renderDungeonList();
+      this.selectDungeon(null);
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    });
   },
 
   updateHint() {

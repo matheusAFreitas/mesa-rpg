@@ -316,6 +316,16 @@ textarea.fc{min-height:75px;resize:vertical;}
   100% { transform: scale(1.0); }
 }
 
+/* ---- DIALOG (confirm / prompt customizados) ---- */
+#dialog-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.80);z-index:500;align-items:center;justify-content:center;}
+#dialog-overlay.open{display:flex;}
+#dialog-box{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:24px 28px;width:340px;max-width:90vw;display:flex;flex-direction:column;gap:16px;}
+#dialog-msg{font-size:14px;color:var(--text);line-height:1.5;}
+#dialog-input-wrap{display:none;}
+#dialog-input{width:100%;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:14px;font-family:inherit;}
+#dialog-input:focus{outline:none;border-color:var(--accent);}
+#dialog-btns{display:flex;gap:8px;justify-content:flex-end;}
+
 /* ---- SCROLLBAR ---- */
 ::-webkit-scrollbar{width:5px;}
 ::-webkit-scrollbar-track{background:var(--bg);}

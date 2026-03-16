@@ -63,9 +63,10 @@ const Combat = {
   },
 
   clear() {
-    if (!confirm('Limpar o combate atual?')) return;
-    App.db.combat = { list:[], round:1, cur:0 };
-    App.save(); this.render();
+    Dialog.confirm('Limpar o combate atual?', () => {
+      App.db.combat = { list:[], round:1, cur:0 };
+      App.save(); this.render();
+    });
   },
 
   _syncHpToPj(x) {
@@ -95,15 +96,20 @@ const Combat = {
   setInit(id) {
     const x = App.db.combat.list.find(c => c.id === id);
     if (!x) return;
-    const v = prompt('Iniciativa para ' + x.name + ':', x.init || '');
-    if (v !== null) { x.init = parseInt(v) || 0; App.save(); this.render(); }
+    Dialog.prompt(`Iniciativa para <strong>${esc(x.name)}</strong>:`, x.init || '', val => {
+      x.init = parseInt(val) || 0; App.save(); this.render();
+    }, { type: 'number' });
   },
 
   addCond(id) {
     const x = App.db.combat.list.find(c => c.id === id);
     if (!x) return;
-    const v = prompt('Condição (ex: Sangrando, Atordoado, Infectado):');
-    if (v) { if (!x.conds) x.conds = []; x.conds.push(v); App.save(); this.render(); }
+    Dialog.prompt('Condição:', '', val => {
+      const v = val.trim();
+      if (!v) return;
+      if (!x.conds) x.conds = [];
+      x.conds.push(v); App.save(); this.render();
+    }, { placeholder: 'ex: Sangrando, Atordoado, Infectado' });
   },
 
   remove(id) {

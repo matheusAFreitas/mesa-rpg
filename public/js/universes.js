@@ -87,9 +87,10 @@ const Universes = {
   delete(id) {
     const u = App.db.universes.find(x => x.id === id);
     if (!u) return;
-    if (!confirm(`Remover o universo "${u.name}"?\nIsso não remove os itens que usam esse universo.`)) return;
-    App.db.universes = App.db.universes.filter(x => x.id !== id);
-    App.save();
-    this.render();
+    Dialog.confirm(`Remover <strong>${esc(u.name)}</strong>?<br><span style="font-size:12px;color:var(--text2)">Isso não remove os itens que usam esse universo.</span>`, () => {
+      App.db.universes = App.db.universes.filter(x => x.id !== id);
+      App.save();
+      this.render();
+    });
   }
 };
