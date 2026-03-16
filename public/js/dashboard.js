@@ -30,5 +30,45 @@ const Dashboard = {
   updateLastRoll(total, desc) {
     const el = document.getElementById('dash-last-roll');
     if (el) el.innerHTML = `<strong style="color:var(--accent);font-size:22px">${total}</strong> <span style="color:var(--text2)">${desc}</span>`;
+  },
+
+  exportDB() {
+    const json = JSON.stringify(App.db, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    const date = new Date().toISOString().slice(0, 10);
+    a.href     = url;
+    a.download = `mesa-rpg-backup-${date}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  },
+
+  importDB() {
+    document.getElementById('import-file').value = '';
+    document.getElementById('import-file').click();
+  },
+
+  _onImportFile(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      let parsed;
+      try { parsed = JSON.parse(e.target.result); } catch (_) {
+        alert('Arquivo inválido: não é um JSON válido.'); return;
+      }
+      Dialog.confirm(
+        `Substituir <strong>todos os dados</strong> pelo backup "<em>${esc(file.name)}</em>"?<br>` +
+        `<span style="font-size:12px;color:var(--text2)">Esta ação não pode ser desfeita.</span>`,
+        async () => {
+          await Api.save(parsed);
+          App.db = await Api.load();
+          App.render(document.querySelector('.nav-item.active').dataset.s);
+          Requests.updateBadge();
+        }
+      );
+    };
+    reader.readAsText(file);
   }
 };

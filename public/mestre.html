@@ -130,6 +130,14 @@ document.addEventListener('keydown', e => {
           <h3>📊 Resumo</h3>
           <div id="dash-summary"></div>
         </div>
+        <div class="widget">
+          <h3>💾 Backup</h3>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
+            <button class="btn btn-secondary" onclick="Dashboard.exportDB()">⬇ Exportar DB</button>
+            <button class="btn btn-secondary" onclick="Dashboard.importDB()">⬆ Importar DB</button>
+          </div>
+          <input type="file" id="import-file" accept=".json" style="display:none" onchange="Dashboard._onImportFile(this)">
+        </div>
       </div>
     </div>
   </section>
