@@ -67,8 +67,8 @@ const Universes = {
   },
 
   saveFromModal() {
-    const name  = (gv('f-uname') || '').trim();
-    const color = gv('f-ucolor') || '#888888';
+    const name  = (getVal('f-uname') || '').trim();
+    const color = getVal('f-ucolor') || '#888888';
     if (!name) { alert('Nome é obrigatório!'); return; }
 
     const id = App._mId;

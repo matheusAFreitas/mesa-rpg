@@ -330,9 +330,9 @@ const DungeonMap = {
   openNewModal() { this.newDungeon(); },
 
   saveFromModal() {
-    const name = gv('f-name') || 'Dungeon';
-    const w = Math.max(5, Math.min(60, parseInt(gv('f-dg-w')) || 20));
-    const h = Math.max(5, Math.min(60, parseInt(gv('f-dg-h')) || 20));
+    const name = getVal('f-name') || 'Dungeon';
+    const w = Math.max(5, Math.min(60, parseInt(getVal('f-dg-w')) || 20));
+    const h = Math.max(5, Math.min(60, parseInt(getVal('f-dg-h')) || 20));
     const grid = Array.from({ length: h }, () => Array(w).fill('empty'));
     const dungeon = { id: uid(), name, width: w, height: h, grid, tokens: [] };
     App.db.dungeons.push(dungeon);
