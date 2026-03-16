@@ -303,10 +303,13 @@ textarea.fc{min-height:75px;resize:vertical;}
 .chg-notes { color: var(--warn); }
 .chg-inv   { color: #55aaee; }
 .chg-priv  { color: #aa77dd; }
+.chg-dice  { color: #55cc88; }
 .chg-hp.active    { text-shadow: 0 0 7px rgba(224,85,85,.85); }
 .chg-notes.active { text-shadow: 0 0 7px rgba(243,156,18,.85); }
 .chg-inv.active   { text-shadow: 0 0 7px rgba(85,170,238,.85); }
 .chg-priv.active  { text-shadow: 0 0 7px rgba(170,119,221,.85); }
+.chg-dice.active  { text-shadow: 0 0 7px rgba(85,204,136,.85); }
+.chg-dice-num{font-size:10px;font-weight:700;margin-left:2px;vertical-align:middle;}
 @keyframes chg-flash {
   0%   { transform: scale(1.9); }
   45%  { transform: scale(1.0); }

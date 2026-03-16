@@ -106,7 +106,8 @@ app.get('/api/gm/active-players', (req, res) => {
       pjName: p.pjName, pjId: p.pjId, hp: p.hp, hpMax: p.hpMax,
       notes: pjData.notes,
       private_notes: pjData.private_notes,
-      inventory: pjData.inventory
+      inventory: pjData.inventory,
+      last_roll: pjData.last_roll
     });
   }
   res.json({ players });
@@ -223,6 +224,7 @@ app.patch('/api/player/pj/:id', (req, res) => {
   if (req.body.inventory            !== undefined) pj.inventory            = req.body.inventory;
   if (req.body.gm_notes_unread      !== undefined) pj.gm_notes_unread      = req.body.gm_notes_unread;
   if (req.body.gm_to_player_unread  !== undefined) pj.gm_to_player_unread  = req.body.gm_to_player_unread;
+  if (req.body.last_roll            !== undefined) pj.last_roll            = req.body.last_roll;
   writeDB(db);
   res.json({ ok: true });
 });

@@ -93,6 +93,7 @@
     </div>
     <div class="tab-nav">
       <button class="tab-btn active" onclick="Player.showTab('ficha')" id="tbtn-ficha">Ficha</button>
+      <button class="tab-btn" onclick="Player.showTab('dados')" id="tbtn-dados">Dados</button>
       <button class="tab-btn" onclick="Player.showTab('mapa')" id="tbtn-mapa">Mapa</button>
     </div>
     <div class="gm-status-badge" id="gm-status-badge" style="margin-left:auto">
@@ -106,6 +107,38 @@
     <div id="tab-ficha" class="tab-content active">
       <div class="ficha" id="ficha-content"></div>
     </div>
+    <!-- DADOS TAB -->
+    <div id="tab-dados" class="tab-content">
+      <div class="ficha">
+        <div class="ficha-section">
+          <h3>Dados Rápidos</h3>
+          <div id="pdice-btns" class="pdice-grid"></div>
+        </div>
+        <div class="ficha-section">
+          <h3>Resultado</h3>
+          <div class="pdice-result">
+            <div class="pdice-num" id="pdice-num">—</div>
+            <div class="pdice-detail" id="pdice-detail">Clique em um dado para rolar</div>
+          </div>
+        </div>
+        <div class="ficha-section">
+          <h3>Rolagem Customizada</h3>
+          <div class="pdice-custom">
+            <input type="number" id="pdc-qty" value="1" min="1" max="20" class="pdice-input">
+            <span class="pdice-sep">d</span>
+            <input type="number" id="pdc-sides" value="6" min="2" max="1000" class="pdice-input">
+            <span class="pdice-sep">+</span>
+            <input type="number" id="pdc-mod" value="0" class="pdice-input">
+            <button class="btn btn-primary" onclick="PDice.rollCustom()">Rolar</button>
+          </div>
+        </div>
+        <div class="ficha-section">
+          <h3>Histórico</h3>
+          <div id="pdice-history" class="pdice-history"></div>
+        </div>
+      </div>
+    </div>
+
     <!-- MAPA TAB -->
     <div id="tab-mapa" class="tab-content">
       <div id="wm-wrap">

@@ -259,13 +259,12 @@ const Player = {
   },
 
   showTab(tab) {
-    ['ficha','mapa'].forEach(t => {
+    ['ficha','dados','mapa'].forEach(t => {
       document.getElementById('tab-'+t).classList.toggle('active', t === tab);
       document.getElementById('tbtn-'+t).classList.toggle('active', t === tab);
     });
-    if (tab === 'mapa') {
-      setTimeout(() => PMap.resize(), 30);
-    }
+    if (tab === 'mapa')  setTimeout(() => PMap.resize(), 30);
+    if (tab === 'dados') PDice.setup();
   },
 
   renderFicha() {
@@ -511,6 +510,76 @@ const Player = {
     });
     this._beat();
     this.renderFicha();
+  }
+};
+
+// =========================================================
+// Player Dice
+// =========================================================
+const PDice = {
+  log: [],
+
+  setup() {
+    const el = document.getElementById('pdice-btns');
+    if (!el || el.dataset.built) return;
+    el.dataset.built = '1';
+    const DICE = [[4,'◆'],[6,'⬡'],[8,'◈'],[10,'⬟'],[12,'⬠'],[20,'⭐'],[100,'💯']];
+    DICE.forEach(([s, icon]) => {
+      const b = document.createElement('div');
+      b.className = 'die-btn';
+      b.innerHTML = `<span class="die-icon">${icon}</span><span class="die-lbl">d${s}</span>`;
+      b.onclick = () => this.roll(1, s);
+      el.appendChild(b);
+    });
+  },
+
+  roll(qty, sides, mod = 0) {
+    const rolls = Array.from({ length: qty }, () => Math.floor(Math.random() * sides) + 1);
+    const total = rolls.reduce((a, b) => a + b, 0) + mod;
+    const desc   = `${qty}d${sides}${mod > 0 ? '+' + mod : mod < 0 ? mod : ''}`;
+    const detail = qty > 1
+      ? `[${rolls.join(', ')}]${mod ? ` ${mod > 0 ? '+' : ''}${mod}` : ''}`
+      : (mod ? `${mod > 0 ? '+' : ''}${mod}` : '');
+
+    const numEl = document.getElementById('pdice-num');
+    if (numEl) {
+      numEl.textContent = total;
+      numEl.style.color = sides === 20 && rolls[0] === 20 ? '#f0c040'
+                        : sides === 20 && rolls[0] === 1  ? '#cc4444'
+                        : 'var(--accent)';
+    }
+    const detEl = document.getElementById('pdice-detail');
+    if (detEl) detEl.textContent = `${desc}${detail ? '  ' + detail : ''}`;
+
+    this.log.unshift({ desc, total, detail, t: new Date().toLocaleTimeString('pt-BR') });
+    this.log = this.log.slice(0, 25);
+    this.renderHistory();
+
+    // Notifica o Mestre sobre a rolagem
+    if (Player.pj) {
+      const last_roll = { total, desc, ts: Date.now() };
+      Player.pj.last_roll = last_roll;
+      fetch(`/api/player/pj/${Player.pj.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ last_roll })
+      });
+    }
+  },
+
+  rollCustom() {
+    const qty   = parseInt(document.getElementById('pdc-qty').value)   || 1;
+    const sides = parseInt(document.getElementById('pdc-sides').value) || 6;
+    const mod   = parseInt(document.getElementById('pdc-mod').value)   || 0;
+    this.roll(qty, sides, mod);
+  },
+
+  renderHistory() {
+    const el = document.getElementById('pdice-history');
+    if (!el) return;
+    el.innerHTML = this.log.map(h =>
+      `<div>${h.t} — <b>${h.desc}</b> = <span style="color:var(--accent)">${h.total}</span>${h.detail ? '  ' + h.detail : ''}</div>`
+    ).join('');
   }
 };
 

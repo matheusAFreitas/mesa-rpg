@@ -5,7 +5,8 @@ const Presence = {
   _prevStructKey: '',
   _changedInfo: new Map(), // pjId → { types: Set<string>, timer }
   _prevHP: new Map(),      // pjId → last known hp (from heartbeat)
-  _prevState: new Map(),   // pjId → { notes, inventory, private_notes } (from App.db)
+  _prevState: new Map(),   // pjId → { notes, inventory, private_notes, last_roll_ts }
+  _lastRoll: new Map(),    // pjId → { total, desc }
 
   init() {
     this.poll();
@@ -42,17 +43,22 @@ const Presence = {
   _changeIcons(pjId) {
     const info = this._changedInfo.get(pjId);
     const a = t => (info && info.types.has(t)) ? ' active' : '';
+    const roll = this._lastRoll.get(pjId);
+    const rollLabel = roll ? `${roll.desc} = ${roll.total}` : 'Dado rolado';
+    const rollNum = (info && info.types.has('roll') && roll)
+      ? `<span class="chg-dice-num">${roll.total}</span>` : '';
     return `<span class="chg-icon chg-hp${a('hp')}"         title="HP alterado">♥</span>` +
            `<span class="chg-icon chg-notes${a('notes')}"   title="Notas alteradas">✏</span>` +
            `<span class="chg-icon chg-inv${a('inventory')}" title="Inventário alterado">⚔</span>` +
-           `<span class="chg-icon chg-priv${a('private')}"  title="Notas privadas">🔒</span>`;
+           `<span class="chg-icon chg-priv${a('private')}"  title="Notas privadas">🔒</span>` +
+           `<span class="chg-icon chg-dice${a('roll')}"     title="${rollLabel}">🎲${rollNum}</span>`;
   },
 
   // Atualiza apenas as classes active nos ícones (sem reconstruir o DOM — preserva animação)
   _refreshRows() {
     const listEl = document.getElementById('presence-hud')?.querySelector('.presence-list');
     if (!listEl) return;
-    const typeMap = { 'chg-hp': 'hp', 'chg-notes': 'notes', 'chg-inv': 'inventory', 'chg-priv': 'private' };
+    const typeMap = { 'chg-hp': 'hp', 'chg-notes': 'notes', 'chg-inv': 'inventory', 'chg-priv': 'private', 'chg-dice': 'roll' };
     listEl.querySelectorAll('.presence-row').forEach(row => {
       const info = this._changedInfo.get(row.dataset.pjid);
       row.querySelectorAll('.chg-icon').forEach(el => {
@@ -105,21 +111,24 @@ const Presence = {
         const prev = this._prevState.get(pjId);
         if (prev) {
           const types = [];
-          if (prev.notes         !== p.notes)                                           types.push('notes');
-          if (prev.private_notes !== p.private_notes)                                   types.push('private');
+          if (prev.notes          !== p.notes)                                          types.push('notes');
+          if (prev.private_notes  !== p.private_notes)                                  types.push('private');
           if (JSON.stringify(prev.inventory) !== JSON.stringify(p.inventory))           types.push('inventory');
+          if (prev.last_roll_ts   !== p.last_roll?.ts && p.last_roll?.ts)               types.push('roll');
           if (types.length) this._triggerChanged(pjId, types);
         }
+        if (p.last_roll) this._lastRoll.set(pjId, p.last_roll);
         this._prevState.set(pjId, {
           notes:         p.notes,
           inventory:     p.inventory,
-          private_notes: p.private_notes
+          private_notes: p.private_notes,
+          last_roll_ts:  p.last_roll?.ts
         });
       });
 
       // Reconstrói o DOM apenas quando a estrutura muda (jogadores/nomes/HP)
       // Evita resetar animações dos ícones a cada poll
-      const structKey = players.map(p => `${p.pjId}:${p.pjName}:${p.hp}/${p.hpMax}`).join('|');
+      const structKey = players.map(p => `${p.pjId}:${p.pjName}:${p.hp}/${p.hpMax}:${p.last_roll?.ts||0}`).join('|');
       if (structKey !== this._prevStructKey) {
         this._prevStructKey = structKey;
         listEl.innerHTML = players.length
