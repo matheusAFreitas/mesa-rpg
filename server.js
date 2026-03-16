@@ -168,6 +168,17 @@ app.get('/api/local-ip', (req, res) => {
   res.json({ ip, port: PORT });
 });
 
+app.delete('/api/db', async (req, res) => {
+  const db = readDB();
+  const { password } = req.body;
+  if (!password || !password.trim()) return res.json({ ok: false, error: 'empty' });
+  if (!db.gm_password) return res.json({ ok: false, error: 'no_password' });
+  const match = await bcrypt.compare(password, db.gm_password);
+  if (!match) return res.json({ ok: false, error: 'wrong' });
+  writeDB({ ...DEFAULT_DB, gm_password: db.gm_password });
+  res.json({ ok: true });
+});
+
 app.get('/api/db', (req, res) => res.json(readDB()));
 
 app.put('/api/db', (req, res) => {
