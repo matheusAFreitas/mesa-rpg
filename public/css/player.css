@@ -641,7 +641,7 @@ body::before {
   border: 1px solid transparent;
 }
 .pcombat-me { background: rgba(62,201,109,0.06); border-color: rgba(62,201,109,0.25); }
-.pcombat-target-hl { background: rgba(192,120,24,.07); border-color: rgba(192,120,24,.3); }
+.pcombat-target-hl { background: rgba(176,48,16,.08); border-color: rgba(176,48,16,.35); }
 .pcombat-member-name {
   font-size: 12px;
   color: var(--text);
@@ -656,8 +656,8 @@ body::before {
 .pcombat-member-hp { font-size: 11px; font-family: var(--fm); }
 .pcombat-mytarget {
   font-size: 9px;
-  background: rgba(192,120,24,.2);
-  color: var(--warn);
+  background: rgba(176,48,16,.2);
+  color: var(--danger);
   border-radius: 1px;
   padding: 0 4px;
   font-weight: 700;
