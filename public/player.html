@@ -269,15 +269,25 @@ const Player = {
   _sessionId: 'ps-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
   _heartbeatTimer: null,
 
-  startHeartbeat(pj) {
-    this.stopHeartbeat();
-    const beat = () => fetch('/api/player/heartbeat', {
+  _beat() {
+    if (!this.pj) return;
+    fetch('/api/player/heartbeat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionId: this._sessionId, pjName: pj.name, pjId: pj.id })
+      body: JSON.stringify({
+        sessionId: this._sessionId,
+        pjName: this.pj.name,
+        pjId: this.pj.id,
+        hp: this.pj.hp,
+        hpMax: this.pj.hp_max
+      })
     }).catch(() => {});
-    beat();
-    this._heartbeatTimer = setInterval(beat, 15000);
+  },
+
+  startHeartbeat() {
+    this.stopHeartbeat();
+    this._beat();
+    this._heartbeatTimer = setInterval(() => this._beat(), 15000);
   },
 
   stopHeartbeat() {
@@ -475,7 +485,7 @@ const Player = {
     this.showTab('ficha');
     this.renderFicha();
     PMap.init(this.db);
-    this.startHeartbeat(pj);
+    this.startHeartbeat();
   },
 
   logout() {
@@ -697,6 +707,7 @@ const Player = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ hp: newHP })
     });
+    this._beat();
     this.renderFicha();
   }
 };

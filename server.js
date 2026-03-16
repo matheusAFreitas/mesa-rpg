@@ -73,18 +73,26 @@ app.get('/api/events', (req, res) => {
 
 // Heartbeat do jogador — registra presença
 app.post('/api/player/heartbeat', (req, res) => {
-  const { sessionId, pjName, pjId } = req.body;
+  const { sessionId, pjName, pjId, hp, hpMax } = req.body;
   if (!sessionId) return res.json({ ok: false });
-  activePlayers.set(sessionId, { pjName: pjName || 'Jogador', pjId, lastSeen: Date.now() });
+  activePlayers.set(sessionId, { pjName: pjName || 'Jogador', pjId, hp, hpMax, lastSeen: Date.now() });
   res.json({ ok: true });
 });
 
-// Lista de jogadores ativos para o GM
+// Lista de jogadores ativos para o GM (inclui campos do DB para detecção de mudanças)
 app.get('/api/gm/active-players', (req, res) => {
   const cutoff = Date.now() - PLAYER_TTL_MS;
+  const db = readDB();
   const players = [];
   for (const [, p] of activePlayers) {
-    if (p.lastSeen >= cutoff) players.push({ pjName: p.pjName, pjId: p.pjId });
+    if (p.lastSeen < cutoff) continue;
+    const pjData = db.pj.find(x => x.id === p.pjId) || {};
+    players.push({
+      pjName: p.pjName, pjId: p.pjId, hp: p.hp, hpMax: p.hpMax,
+      notes: pjData.notes,
+      private_notes: pjData.private_notes,
+      inventory: pjData.inventory
+    });
   }
   res.json({ players });
 });

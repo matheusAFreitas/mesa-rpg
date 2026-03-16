@@ -43,18 +43,41 @@ const App = {
   startSSE() {
     const es = new EventSource('/api/events');
     es.onmessage = async () => {
-      // Ignora se modal aberto, save pendente ou acabou de salvar (evita loop)
-      if (document.getElementById('overlay').classList.contains('open')) return;
-      if (this._saveTimer) return;
-      if (this._lastSaveTime && Date.now() - this._lastSaveTime < 1500) return;
-
       try {
         const fresh = await Api.load();
         if (JSON.stringify(fresh) === JSON.stringify(this.db)) return;
+
+        // Detecta PJs que alteraram hp, notes, inventário ou notas privadas
+        // (sempre executa, independente dos guards — atividade do jogador nunca deve ser ignorada)
+        if (window.Presence) {
+          const changed = [];
+          (fresh.pj || []).forEach(newPj => {
+            const old = (this.db.pj || []).find(p => p.id === newPj.id);
+            if (!old) return;
+            const types = [];
+            if (old.hp            !== newPj.hp)                                              types.push('hp');
+            if (old.notes         !== newPj.notes)                                           types.push('notes');
+            if (JSON.stringify(old.inventory) !== JSON.stringify(newPj.inventory))           types.push('inventory');
+            if (old.private_notes !== newPj.private_notes)                                   types.push('private');
+            if (types.length) changed.push({ id: newPj.id, name: newPj.name, types });
+          });
+          if (changed.length) Presence.notifyChanges(changed);
+        }
+
+        // Atualiza o db local antes dos guards para que o poll() tenha dados frescos
         this.db = fresh;
         Requests.updateBadge();
+
+        // Guards aplicados apenas ao re-render da view do GM (evita loop nos próprios saves)
+        if (document.getElementById('overlay').classList.contains('open')) return;
+        if (this._saveTimer) return;
+        if (this._lastSaveTime && Date.now() - this._lastSaveTime < 1500) return;
+
         const active = document.querySelector('.nav-item.active');
         if (active) this.render(active.dataset.s);
+
+        // Atualiza presença imediatamente após qualquer mudança de DB
+        if (window.Presence) Presence.poll();
       } catch (err) {
         console.error('[SSE] Falha ao sincronizar:', err);
       }
