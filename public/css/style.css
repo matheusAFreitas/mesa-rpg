@@ -80,6 +80,10 @@ textarea.fc{min-height:75px;resize:vertical;}
 .crow{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:5px;}
 .crow.active-turn{border-color:var(--accent);background:#180808;}
 .crow.dead{opacity:.35;}
+.crow-indented{margin-left:20px;border-left:2px solid var(--border) !important;}
+.combat-group{margin-bottom:10px;}
+.combat-group .crow:not(.crow-indented){border-left:3px solid var(--accent);}
+.combat-unassigned-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;padding:6px 4px 4px;}
 .init-badge{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:3px 8px;font-size:15px;font-weight:700;min-width:38px;text-align:center;color:var(--accent);}
 .cname{flex:1;font-weight:500;font-size:13px;}
 .hp-ctrl{display:flex;align-items:center;gap:5px;}

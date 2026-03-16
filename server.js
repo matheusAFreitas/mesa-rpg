@@ -178,7 +178,7 @@ app.get('/api/player/data', (req, res) => {
   const db = readDB();
   // eslint-disable-next-line no-unused-vars
   const pj = db.pj.map(({ gm_notes, ...rest }) => rest);
-  res.json({ pj, pending_pj: db.pending_pj || [], location: db.location, worldMap: db.worldMap, universes: db.universes });
+  res.json({ pj, pending_pj: db.pending_pj || [], location: db.location, worldMap: db.worldMap, universes: db.universes, combat: db.combat || { list: [], round: 1, cur: 0 } });
 });
 
 // Player submits a character creation request

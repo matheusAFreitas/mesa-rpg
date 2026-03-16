@@ -86,6 +86,7 @@ const Player = {
         this.pj = this.db.pj.find(p => p.id === this.pj.id) || this.pj;
         this.renderFicha();
         PMap.syncAndDraw();
+        PCombat.render();
       } else {
         const pendingId = localStorage.getItem('pending-request-id');
         if (pendingId) {
@@ -248,6 +249,7 @@ const Player = {
     this.renderFicha();
     PMap.init(this.db);
     this.startHeartbeat();
+    PCombat.render();
   },
 
   logout() {
@@ -853,6 +855,79 @@ const PlayerCreate = {
       if (k && v) stats[k] = v;
     });
     return stats;
+  }
+};
+
+// =========================================================
+// Player Combat HUD
+// =========================================================
+const PCombat = {
+  render() {
+    const hud = document.getElementById('pcombat-hud');
+    if (!hud) return;
+
+    const combat = Player.db && Player.db.combat;
+    if (!Player.pj || !combat || !combat.list || !combat.list.length) {
+      hud.classList.remove('active');
+      document.getElementById('screen-player').style.paddingBottom = '';
+      return;
+    }
+
+    const myEntry    = combat.list.find(x => x.pj_id === Player.pj.id);
+    const activeEntry = combat.list[combat.cur];
+
+    if (!myEntry) {
+      // Combate ativo mas jogador não está nele
+      hud.classList.add('active');
+      hud.innerHTML = `
+        <div class="pcombat-notif">
+          <span class="pcombat-notif-dot"></span>
+          <span>⚔️ <strong>Combate ativo</strong></span>
+        </div>`;
+      document.getElementById('screen-player').style.paddingBottom = '52px';
+      return;
+    }
+
+    // Jogador está no combate
+    const isMyTurn = activeEntry && activeEntry.id === myEntry.id;
+    const target   = myEntry.target_id ? combat.list.find(x => x.id === myEntry.target_id) : null;
+
+    const myPct     = myEntry.hp_max > 0 ? Math.max(0, myEntry.hp / myEntry.hp_max * 100) : 100;
+    const myHpColor = myPct > 50 ? '#27ae60' : myPct > 25 ? '#f39c12' : '#e74c3c';
+
+    let targetHTML = '';
+    if (target) {
+      const tPct     = target.hp_max > 0 ? Math.max(0, target.hp / target.hp_max * 100) : 100;
+      const tHpColor = tPct > 50 ? '#27ae60' : tPct > 25 ? '#f39c12' : '#e74c3c';
+      targetHTML = `
+        <div class="pcombat-divider"></div>
+        <div class="pcombat-target">
+          <div class="pcombat-target-label">⚔️ Atacando</div>
+          <div class="pcombat-target-name">${esc(target.name)}</div>
+          <div class="pcombat-target-hp">
+            <span style="color:${tHpColor};font-weight:700;">${target.hp}</span>
+            <span style="color:var(--text2);font-size:11px;"> / ${target.hp_max}</span>
+          </div>
+          <div class="pcombat-hp-bar"><div class="pcombat-hp-fill" style="width:${tPct}%;background:${tHpColor};"></div></div>
+          ${(target.conds||[]).length ? `<div class="pcombat-conds">${target.conds.map(c=>`<span class="pcombat-cond">${esc(c)}</span>`).join('')}</div>` : ''}
+        </div>`;
+    }
+
+    hud.classList.add('active');
+    hud.innerHTML = `
+      <div class="pcombat-main${isMyTurn ? ' my-turn' : ''}">
+        <div class="pcombat-round">Rodada ${combat.round}</div>
+        <div class="pcombat-turn${isMyTurn ? ' active' : ''}">
+          ${isMyTurn ? '⚡ Seu turno!' : `Vez de: <strong>${esc(activeEntry ? activeEntry.name : '?')}</strong>`}
+        </div>
+        <div class="pcombat-my-hp">
+          Você: <span style="color:${myHpColor};font-weight:700;">${myEntry.hp}/${myEntry.hp_max}</span>
+          ${myEntry.init != null ? `<span style="color:var(--text2);font-size:11px;"> · Init ${myEntry.init}</span>` : ''}
+          ${(myEntry.conds||[]).length ? `<div class="pcombat-conds" style="margin-top:3px;">${myEntry.conds.map(c=>`<span class="pcombat-cond">${esc(c)}</span>`).join('')}</div>` : ''}
+        </div>
+      </div>
+      ${targetHTML}`;
+    document.getElementById('screen-player').style.paddingBottom = '68px';
   }
 };
 

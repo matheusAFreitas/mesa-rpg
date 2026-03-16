@@ -14,11 +14,24 @@ const Combat = {
       el.innerHTML = `<div class="empty"><div class="ei">⚔️</div><p>Nenhum combatente.</p></div>`;
       return;
     }
-    el.innerHTML = c.list.map((x, i) => {
+
+    const activeId = c.list[c.cur]?.id;
+    const enemies  = c.list.filter(x => x.type === 'enemy');
+    const players  = c.list.filter(x => x.type === 'player');
+    const grouped  = enemies.length > 0 && players.length > 0;
+
+    const rowHTML = (x, indented = false) => {
       const pct = x.hp_max > 0 ? Math.max(0, x.hp / x.hp_max * 100) : 100;
       const hpClass = pct > 50 ? 'hp-ok' : pct > 25 ? 'hp-warn' : 'hp-crit';
-      const cur = i === c.cur;
-      return `<div class="crow ${cur?'active-turn':''} ${x.hp<=0?'dead':''}">
+      const cur = x.id === activeId;
+      const targetSel = grouped && x.type === 'player' ? `
+        <div style="margin-top:4px;">
+          <select style="font-size:11px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);padding:2px 6px;cursor:pointer;" onchange="Combat.setTarget('${x.id}',this.value)">
+            <option value="">— Sem alvo —</option>
+            ${enemies.map(e=>`<option value="${e.id}"${x.target_id===e.id?' selected':''}>${esc(e.name)}</option>`).join('')}
+          </select>
+        </div>` : '';
+      return `<div class="crow ${cur?'active-turn':''} ${x.hp<=0?'dead':''}${indented?' crow-indented':''}">
         <span style="width:12px;color:var(--accent);font-size:11px;">${cur?'▶':''}</span>
         <div class="init-badge">${x.init??'?'}</div>
         <div class="cname">
@@ -27,6 +40,7 @@ const Combat = {
             <span class="tag">${x.type==='player'?'PJ':'Inimigo'}</span>
             ${(x.conds||[]).map(c=>`<span class="tag" style="color:#ff9944">${esc(c)}</span>`).join('')}
           </div>
+          ${targetSel}
         </div>
         <div class="hp-ctrl">
           <span class="hp-lbl ${hpClass}">${x.hp}/${x.hp_max||'?'}</span>
@@ -35,12 +49,37 @@ const Combat = {
           <button class="btn btn-ok btn-sm" onclick="Combat.applyHeal('${x.id}')">Cura</button>
         </div>
         <div style="display:flex;gap:4px;">
-          <button class="btn btn-secondary btn-sm" onclick="Combat.setInit('${x.id}')">🎲</button>
+          <button class="btn btn-secondary btn-sm" title="Rolar iniciativa (1d20)" onclick="Combat.rollInit('${x.id}')">🎲</button>
+          <button class="btn btn-secondary btn-sm" title="Definir iniciativa manualmente" onclick="Combat.setInit('${x.id}')">✏</button>
           <button class="btn btn-secondary btn-sm" onclick="Combat.addCond('${x.id}')">+</button>
           <button class="btn btn-danger btn-sm" onclick="Combat.remove('${x.id}')">✕</button>
         </div>
       </div>`;
-    }).join('');
+    };
+
+    if (!grouped) {
+      el.innerHTML = c.list.map(x => rowHTML(x)).join('');
+      return;
+    }
+
+    let html = '';
+    enemies.forEach(enemy => {
+      const attackers = players.filter(p => p.target_id === enemy.id);
+      html += `<div class="combat-group">`;
+      html += rowHTML(enemy);
+      attackers.forEach(p => { html += rowHTML(p, true); });
+      html += `</div>`;
+    });
+
+    const unassigned = players.filter(p => !p.target_id || !enemies.find(e => e.id === p.target_id));
+    if (unassigned.length) {
+      html += `<div class="combat-group">`;
+      html += `<div class="combat-unassigned-label">Sem alvo</div>`;
+      unassigned.forEach(p => { html += rowHTML(p); });
+      html += `</div>`;
+    }
+
+    el.innerHTML = html;
   },
 
   nextTurn() {
@@ -58,8 +97,22 @@ const Combat = {
   },
 
   rollAllInit() {
-    App.db.combat.list.forEach(x => x.init = Math.floor(Math.random()*20)+1);
+    App.db.combat.list.forEach(x => x.init = Dice.roll(1, 20));
     this.sort();
+  },
+
+  setTarget(id, targetId) {
+    const x = App.db.combat.list.find(c => c.id === id);
+    if (!x) return;
+    x.target_id = targetId || null;
+    App.save(); this.render();
+  },
+
+  rollInit(id) {
+    const x = App.db.combat.list.find(c => c.id === id);
+    if (!x) return;
+    x.init = Dice.roll(1, 20);
+    App.save(); this.render();
   },
 
   clear() {
