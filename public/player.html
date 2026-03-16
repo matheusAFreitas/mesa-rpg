@@ -287,7 +287,7 @@ const Player = {
   startHeartbeat() {
     this.stopHeartbeat();
     this._beat();
-    this._heartbeatTimer = setInterval(() => this._beat(), 15000);
+    this._heartbeatTimer = setInterval(() => this._beat(), 8000);
   },
 
   stopHeartbeat() {

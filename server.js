@@ -31,7 +31,7 @@ const sseClients = new Set();
 
 // ---- Presença de jogadores (in-memory, reseta com o servidor) ----
 const activePlayers = new Map();
-const PLAYER_TTL_MS = 35000;
+const PLAYER_TTL_MS = 20000;
 
 setInterval(() => {
   const cutoff = Date.now() - PLAYER_TTL_MS;
