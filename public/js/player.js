@@ -972,7 +972,17 @@ document.getElementById('pin-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') Player.confirmPin();
 });
 
-// Para o heartbeat ao fechar a aba
+// Para o heartbeat ao fechar a aba (beforeunload não dispara no mobile)
 window.addEventListener('beforeunload', () => Player.stopHeartbeat());
+window.addEventListener('pagehide',     () => Player.stopHeartbeat());
+
+// Pausa heartbeat quando a aba fica em background, retoma quando volta
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    Player.stopHeartbeat();
+  } else if (Player.pj) {
+    Player.startHeartbeat();
+  }
+});
 
 Player.init();
