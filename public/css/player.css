@@ -700,14 +700,26 @@ body::before {
 
 /* ---- MOBILE (≤ 480px) ---- */
 @media (max-width: 480px) {
-  /* Header compacto */
-  .player-header { padding: 8px 12px; gap: 8px; }
-  .player-header .char-name { font-size: 13px; }
+  /* Header: duas linhas no mobile */
+  .player-header {
+    flex-wrap: wrap;
+    padding: 8px 12px 0;
+    gap: 6px;
+    align-items: center;
+  }
+  .player-header .char-name { font-size: 13px; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .player-header .char-meta { display: none; }
-  .gm-status-badge { padding: 3px 7px; font-size: 9px; }
+  .gm-status-badge { padding: 3px 7px; font-size: 9px; flex-shrink: 0; }
 
-  /* Tabs */
-  .tab-btn { padding: 8px 12px; font-size: 9px; letter-spacing: 1px; }
+  /* Tabs descem para segunda linha, full width */
+  .tab-nav {
+    order: 10;
+    width: calc(100% + 24px);
+    margin: 4px -12px 0;
+    border-top: 1px solid var(--border);
+    padding: 0 4px;
+  }
+  .tab-btn { padding: 8px 14px; font-size: 10px; letter-spacing: .8px; flex: 1; text-align: center; }
 
   /* Ficha */
   .ficha { padding: 14px 12px; }
