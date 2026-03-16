@@ -90,6 +90,15 @@ body::before{
 .copy-btn:hover{border-color:var(--accent);color:var(--accent);}
 .copy-btn.copied{border-color:var(--ok);color:var(--ok);}
 
+@media(max-width:520px){
+  .landing{padding:28px 16px;}
+  .landing h1{font-size:16px;letter-spacing:4px;}
+  .cards{gap:10px;}
+  .role-card{width:150px;padding:22px 16px;}
+  .player-link{padding:12px 14px;}
+  .player-link-url{font-size:12px;}
+}
+
 /* Modal */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:100;align-items:center;justify-content:center;}
 .overlay.open{display:flex;}
