@@ -192,7 +192,11 @@ const App = {
     if (type === 'universe')  { Universes.saveFromModal(); return; }
 
     const item = Cards.readForm(type);
-    if (!item.name) { alert('Nome é obrigatório!'); return; }
+    if (type === 'session') {
+      if (!item.title) { alert('Título é obrigatório!'); return; }
+    } else {
+      if (!item.name) { alert('Nome é obrigatório!'); return; }
+    }
     if (type === 'pj' && (!item.hp || !item.hp_max)) { alert('HP Atual e HP Máximo são obrigatórios!'); return; }
 
     if (id) {

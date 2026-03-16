@@ -34,6 +34,23 @@ const Cards = {
     rows[rows.length - 1].querySelector('.stat-key').focus();
   },
 
+  // ---- Inventário (editor no modal) ----
+  invRowHTML(item = {}) {
+    const id = item.id || ('i' + Date.now().toString(36) + Math.random().toString(36).slice(2, 4));
+    return `<div class="inv-row" style="display:flex;gap:6px;align-items:center;margin-bottom:4px;">
+      <input type="hidden" class="inv-id" value="${id}">
+      <input type="text" class="fc inv-name" placeholder="Nome do item" value="${esc(item.name||'')}" style="flex:1;">
+      <input type="number" class="fc inv-qty" value="${item.qty||1}" min="1" style="width:64px;">
+      <button type="button" class="btn-icon-sm" onclick="this.closest('.inv-row').remove()" title="Remover">✕</button>
+    </div>`;
+  },
+
+  addInvRow() {
+    document.getElementById('inv-editor').insertAdjacentHTML('beforeend', this.invRowHTML());
+    const rows = document.querySelectorAll('#inv-editor .inv-row');
+    rows[rows.length - 1].querySelector('.inv-name').focus();
+  },
+
   // ---- Renderização da lista ----
   render(type) {
     const q = (document.getElementById('search-' + type) || {}).value || '';
@@ -63,6 +80,10 @@ const Cards = {
       const lvl = i.level || 1;
       const xp = i.xp || 0; const xpNext = i.xp_next || 0;
       const xpPct = xpNext > 0 ? Math.min(100, xp / xpNext * 100) : 0;
+      const inv = i.inventory || [];
+      const invHTML = inv.length
+        ? inv.map(it => `<span class="tag" style="font-size:10px;">${esc(it.name)}${it.qty>1?` ×${it.qty}`:''}</span>`).join(' ')
+        : `<span style="font-size:11px;color:var(--text2)">—</span>`;
       return `<div class="card">
         <div class="card-header"><div>
           <div class="card-title">${esc(i.name)} <span style="font-size:11px;color:var(--accent);font-weight:600;">Nv.${lvl}</span></div>
@@ -73,6 +94,8 @@ const Cards = {
         ${xpNext>0?`<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-top:4px"><span>XP</span><span>${xp}/${xpNext}</span></div>
         <div class="hp-bar"><div class="hp-fill" style="width:${xpPct}%;background:var(--accent)"></div></div>`:''}
         <div class="stat-block">${statsHTML}</div>
+        <div style="margin-top:6px;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:3px;">Inventário</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;">${invHTML}</div>
         ${i.notes?`<div class="card-notes">${esc(i.notes)}</div>`:''}
       </div>`;
     }
@@ -150,6 +173,12 @@ const Cards = {
         </div>
         <button type="button" class="btn btn-secondary btn-sm" style="margin-top:6px" onclick="Cards.addStatRow()">+ Atributo Custom</button>
       </div>
+      <div class="fg"><label>Inventário</label>
+        <div id="inv-editor">
+          ${(i?.inventory||[]).map(it => Cards.invRowHTML(it)).join('')}
+        </div>
+        <button type="button" class="btn btn-secondary btn-sm" style="margin-top:6px" onclick="Cards.addInvRow()">+ Adicionar Item</button>
+      </div>
       <div class="fg"><label>Anotações (jogador vê e edita)</label><textarea class="fc" id="f-notes">${i?.notes||''}</textarea></div>
       <div class="fg"><label>Recados para o Jogador (Mestre escreve — jogador só lê)</label><textarea class="fc" id="f-gm_to_player_notes" style="border-color:#1a4a5a">${i?.gm_to_player_notes||''}</textarea></div>
       <div class="fg"><label>Notas Secretas do Mestre (jogador não vê — mas é avisado que algo foi escrito)</label><textarea class="fc" id="f-gm_notes" style="border-color:#5a3a1a">${i?.gm_notes||''}</textarea></div>
@@ -218,7 +247,14 @@ const Cards = {
         const v = row.querySelector('.stat-val').value.trim();
         if (k && v) stats[k] = v;
       });
-      return { name:getVal('f-name'), class:getVal('f-class'), universe:getVal('f-universe'), hp:+getVal('f-hp')||0, hp_max:+getVal('f-hp_max')||0, level:+getVal('f-level')||1, xp:+getVal('f-xp')||0, xp_next:+getVal('f-xp_next')||0, stats, notes:getVal('f-notes'), gm_to_player_notes:getVal('f-gm_to_player_notes'), gm_notes:getVal('f-gm_notes'), ...(pin ? {pin} : {pin:''}) };
+      const inventory = [];
+      document.querySelectorAll('#inv-editor .inv-row').forEach(row => {
+        const name = row.querySelector('.inv-name').value.trim();
+        const qty  = parseInt(row.querySelector('.inv-qty').value) || 1;
+        const id   = row.querySelector('.inv-id').value;
+        if (name) inventory.push({ id, name, qty });
+      });
+      return { name:getVal('f-name'), class:getVal('f-class'), universe:getVal('f-universe'), hp:+getVal('f-hp')||0, hp_max:+getVal('f-hp_max')||0, level:+getVal('f-level')||1, xp:+getVal('f-xp')||0, xp_next:+getVal('f-xp_next')||0, stats, inventory, notes:getVal('f-notes'), gm_to_player_notes:getVal('f-gm_to_player_notes'), gm_notes:getVal('f-gm_notes'), ...(pin ? {pin} : {pin:''}) };
     }
     if (type === 'npc') return { name:getVal('f-name'), faction:getVal('f-faction'), universe:getVal('f-universe'), role:getVal('f-role'), attitude:getVal('f-attitude'), notes:getVal('f-notes') };
     if (type === 'creature') return { name:getVal('f-name'), universe:getVal('f-universe'), threat:getVal('f-threat'), hp:getVal('f-hp'), armor:getVal('f-armor'), damage:getVal('f-damage'), abilities:getVal('f-abilities') };
