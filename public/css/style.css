@@ -1,18 +1,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Share+Tech+Mono&display=swap');
 
 :root {
-  --bg:       #050503;
-  --bg2:      #0C0B08;
-  --bg3:      #131210;
-  --border:   #28240E;
-  --accent:   #D4921A;
-  --accent-lo:#8A5C08;
-  --text:     #D8CC96;
-  --text2:    #9A8848;
-  --ok:       #4A8C35;
+  --bg:       #030504;
+  --bg2:      #06100A;
+  --bg3:      #0C1A0D;
+  --border:   #112810;
+  --accent:   #3EC96D;
+  --accent-lo:#1A6B38;
+  --text:     #B8D8B0;
+  --text2:    #5E9654;
+  --ok:       #5AB845;
   --warn:     #C07818;
   --danger:   #B03010;
-  --glow:     rgba(212,146,26,0.14);
+  --glow:     rgba(62,201,109,0.14);
   --ff:       'Chakra Petch', system-ui, sans-serif;
   --fm:       'Share Tech Mono', 'Courier New', monospace;
 }
@@ -78,7 +78,7 @@ body::before {
   letter-spacing: 3px;
   color: var(--accent);
   font-family: var(--fm);
-  text-shadow: 0 0 16px rgba(212,146,26,0.55);
+  text-shadow: 0 0 16px rgba(62,201,109,0.55);
 }
 .logo p {
   font-size: 9px;
@@ -106,7 +106,7 @@ body::before {
   background: var(--bg3);
   color: var(--accent);
   border-left-color: var(--accent);
-  text-shadow: 0 0 12px rgba(212,146,26,0.35);
+  text-shadow: 0 0 12px rgba(62,201,109,0.35);
 }
 .nav-sep { height: 1px; background: var(--border); margin: 8px 0; }
 
@@ -129,7 +129,7 @@ body::before {
   letter-spacing: 3px;
   color: var(--accent);
   font-family: var(--fm);
-  text-shadow: 0 0 18px rgba(212,146,26,0.3);
+  text-shadow: 0 0 18px rgba(62,201,109,0.3);
   padding-left: 14px;
   position: relative;
 }
@@ -190,7 +190,7 @@ body::before {
 }
 .card::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
 .card::after  { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
-.card:hover { border-color: rgba(212,146,26,0.3); box-shadow: 0 0 18px rgba(212,146,26,0.04); }
+.card:hover { border-color: rgba(62,201,109,0.3); box-shadow: 0 0 18px rgba(62,201,109,0.04); }
 .card:hover::before,
 .card:hover::after { opacity: 0.9; }
 
@@ -308,7 +308,7 @@ body::before {
   font-family: inherit;
   border-radius: 2px;
 }
-.fc:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 8px rgba(212,146,26,0.12); }
+.fc:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 8px rgba(62,201,109,0.12); }
 textarea.fc { min-height: 75px; resize: vertical; }
 .fr2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .fr3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
@@ -345,12 +345,12 @@ textarea.fc { min-height: 75px; resize: vertical; }
   transition: all .2s;
   border-radius: 1px;
 }
-.crow:hover { border-left-color: rgba(212,146,26,0.25); }
+.crow:hover { border-left-color: rgba(62,201,109,0.25); }
 .crow.active-turn {
   border-color: var(--accent-lo);
   border-left-color: var(--accent);
   background: #100E05;
-  box-shadow: inset 0 0 40px rgba(212,146,26,0.04), 0 0 14px rgba(212,146,26,0.07);
+  box-shadow: inset 0 0 40px rgba(62,201,109,0.04), 0 0 14px rgba(62,201,109,0.07);
 }
 .crow.dead { opacity: .3; filter: grayscale(.9); }
 .crow-indented { margin-left: 20px; border-left: 2px solid var(--border) !important; }
@@ -408,7 +408,7 @@ textarea.fc { min-height: 75px; resize: vertical; }
 .round-info strong {
   color: var(--accent);
   font-size: 17px;
-  text-shadow: 0 0 14px rgba(212,146,26,0.5);
+  text-shadow: 0 0 14px rgba(62,201,109,0.5);
 }
 
 /* ---- DICE ---- */
@@ -433,7 +433,7 @@ textarea.fc { min-height: 75px; resize: vertical; }
   border-color: var(--accent);
   background: var(--bg3);
   transform: translateY(-2px);
-  box-shadow: 0 4px 18px rgba(212,146,26,0.18);
+  box-shadow: 0 4px 18px rgba(62,201,109,0.18);
 }
 .die-icon { font-size: 22px; }
 .die-lbl { font-size: 9px; color: var(--text2); font-family: var(--fm); letter-spacing: 1.2px; text-transform: uppercase; }
@@ -449,7 +449,7 @@ textarea.fc { min-height: 75px; resize: vertical; }
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at center, rgba(212,146,26,0.06) 0%, transparent 65%);
+  background: radial-gradient(ellipse at center, rgba(62,201,109,0.06) 0%, transparent 65%);
   pointer-events: none;
 }
 .dice-num {
@@ -457,7 +457,7 @@ textarea.fc { min-height: 75px; resize: vertical; }
   color: var(--accent);
   line-height: 1;
   font-family: var(--fm);
-  text-shadow: 0 0 30px rgba(212,146,26,0.65), 0 0 70px rgba(212,146,26,0.2);
+  text-shadow: 0 0 30px rgba(62,201,109,0.65), 0 0 70px rgba(62,201,109,0.2);
 }
 .dice-detail { color: var(--text2); font-size: 11px; margin-top: 7px; font-family: var(--fm); letter-spacing: 1.2px; }
 
@@ -523,7 +523,7 @@ textarea.fc { min-height: 75px; resize: vertical; }
   font-family: var(--fm);
   border-radius: 2px;
 }
-.qd:hover { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 10px rgba(212,146,26,0.12); }
+.qd:hover { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 10px rgba(62,201,109,0.12); }
 .qnotes {
   width: 100%;
   min-height: 110px;
@@ -537,7 +537,7 @@ textarea.fc { min-height: 75px; resize: vertical; }
   letter-spacing: .3px;
   border-radius: 2px;
 }
-.qnotes:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 8px rgba(212,146,26,0.1); }
+.qnotes:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 8px rgba(62,201,109,0.1); }
 .ctr-item {
   display: flex;
   justify-content: space-between;
@@ -634,7 +634,7 @@ textarea.fc { min-height: 75px; resize: vertical; }
   text-transform: uppercase;
   border-radius: 2px;
 }
-.tile-btn:hover { border-color: #3A3015; }
+.tile-btn:hover { border-color: #0E2E14; }
 .tile-btn.active { border-color: var(--accent); }
 .tile-swatch { width: 18px; height: 18px; margin-bottom: 1px; }
 #dungeon-list .dl-item {
@@ -666,7 +666,7 @@ textarea.fc { min-height: 75px; resize: vertical; }
   font-family: var(--fm);
   border-radius: 2px;
 }
-.token-btn:hover { border-color: #3A3015; }
+.token-btn:hover { border-color: #0E2E14; }
 .token-btn.active { border-color: var(--accent); }
 .token-circle {
   width: 18px; height: 18px;
@@ -686,7 +686,7 @@ textarea.fc { min-height: 75px; resize: vertical; }
   bottom: 18px; right: 18px;
   width: 270px;
   background: rgba(8,7,5,0.97);
-  border: 1px solid rgba(212,146,26,0.1);
+  border: 1px solid rgba(62,201,109,0.1);
   font-family: var(--fm);
   font-size: 12px;
   z-index: 50;
@@ -705,13 +705,13 @@ textarea.fc { min-height: 75px; resize: vertical; }
   align-items: center;
   gap: 8px;
   padding: 10px 13px;
-  border-bottom: 1px solid rgba(212,146,26,0.07);
+  border-bottom: 1px solid rgba(62,201,109,0.07);
   cursor: default;
 }
 .presence-signal {
   width: 6px; height: 6px;
   border-radius: 50%;
-  background: #2A2410;
+  background: #0A2010;
   flex-shrink: 0;
   transition: background .4s;
 }
@@ -729,13 +729,13 @@ textarea.fc { min-height: 75px; resize: vertical; }
   font-size: 9px;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: #6A5C28;
+  color: #2E6B3A;
 }
-#presence-hud[data-online="1"] .presence-label { color: #9A8040; }
+#presence-hud[data-online="1"] .presence-label { color: #3A8C50; }
 .presence-count {
   font-size: 17px;
   font-weight: 700;
-  color: #5A5020;
+  color: #1C4828;
   line-height: 1;
   min-width: 20px;
   text-align: right;
@@ -750,14 +750,14 @@ textarea.fc { min-height: 75px; resize: vertical; }
 .presence-toggle {
   background: none;
   border: none;
-  color: #6A5C28;
+  color: #2E6B3A;
   cursor: pointer;
   font-size: 14px;
   line-height: 1;
   padding: 0 0 0 4px;
   font-family: inherit;
 }
-.presence-toggle:hover { color: #7A6020; }
+.presence-toggle:hover { color: #3A8050; }
 .presence-list {
   padding: 8px 13px 10px;
   display: flex;
@@ -784,7 +784,7 @@ textarea.fc { min-height: 75px; resize: vertical; }
   flex: 1;
   min-width: 0;
 }
-.presence-empty { font-size: 11px; color: #5A5020; letter-spacing: 1px; padding: 2px 0 1px; }
+.presence-empty { font-size: 11px; color: #1C4828; letter-spacing: 1px; padding: 2px 0 1px; }
 .presence-hp { font-size: 11px; color: #C04030; flex-shrink: 0; font-variant-numeric: tabular-nums; }
 .presence-icons { margin-left: auto; display: flex; gap: 5px; flex-shrink: 0; align-items: center; }
 .chg-icon { font-size: 14px; line-height: 1; cursor: default; opacity: 0.12; transition: opacity .35s; }
