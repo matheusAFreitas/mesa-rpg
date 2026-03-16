@@ -4,6 +4,8 @@ const BASE_STATS = ['FOR', 'DES', 'CON', 'INT', 'SAB', 'CAR'];
 const _searchDebounced = {};
 
 const Cards = {
+
+  // ---- Atributos (stats editor) ----
   statRowHTML(k = '', v = '', fixed = false) {
     const keyInput = fixed
       ? `<input type="text" class="fc stat-key" value="${k}" readonly style="color:var(--text2);cursor:default;">`
@@ -18,6 +20,7 @@ const Cards = {
     </div>`;
   },
 
+  // ---- Busca com debounce ----
   search(type) {
     if (!_searchDebounced[type]) {
       _searchDebounced[type] = debounce(() => Cards.render(type), 250);
@@ -31,6 +34,7 @@ const Cards = {
     rows[rows.length - 1].querySelector('.stat-key').focus();
   },
 
+  // ---- Renderização da lista ----
   render(type) {
     const q = (document.getElementById('search-' + type) || {}).value || '';
     const items = App.db[type].filter(i => !q || JSON.stringify(i).toLowerCase().includes(q.toLowerCase()));
@@ -42,6 +46,7 @@ const Cards = {
     el.innerHTML = items.map(i => this.cardHTML(type, i)).join('');
   },
 
+  // ---- HTML de cada card (por tipo) ----
   cardHTML(type, i) {
     const uStyle = App.tagStyle(i.universe);
     const editBtn = `<button class="btn btn-secondary btn-sm" onclick="App.openModal('${type}','${i.id}')">✏</button>`;
@@ -118,7 +123,7 @@ const Cards = {
     return '';
   },
 
-  // ---- MODAL FORMS ----
+  // ---- Formulários do modal (por tipo) ----
   modalForm(type, i) {
     const unis = App.getUniverseOptions(i?.universe);
 
@@ -202,21 +207,22 @@ const Cards = {
     return '';
   },
 
+  // ---- Leitura dos valores do formulário ----
   readForm(type) {
     if (type === 'pj') {
-      const pin = gv('f-pin').trim();
+      const pin = getVal('f-pin').trim();
       const stats = {};
       document.querySelectorAll('#stats-editor .stats-row').forEach(row => {
         const k = row.querySelector('.stat-key').value.trim().toUpperCase();
         const v = row.querySelector('.stat-val').value.trim();
         if (k && v) stats[k] = v;
       });
-      return { name:gv('f-name'), class:gv('f-class'), universe:gv('f-universe'), hp:+gv('f-hp')||0, hp_max:+gv('f-hp_max')||0, level:+gv('f-level')||1, xp:+gv('f-xp')||0, xp_next:+gv('f-xp_next')||0, stats, notes:gv('f-notes'), gm_notes:gv('f-gm_notes'), ...(pin ? {pin} : {pin:''}) };
+      return { name:getVal('f-name'), class:getVal('f-class'), universe:getVal('f-universe'), hp:+getVal('f-hp')||0, hp_max:+getVal('f-hp_max')||0, level:+getVal('f-level')||1, xp:+getVal('f-xp')||0, xp_next:+getVal('f-xp_next')||0, stats, notes:getVal('f-notes'), gm_notes:getVal('f-gm_notes'), ...(pin ? {pin} : {pin:''}) };
     }
-    if (type === 'npc') return { name:gv('f-name'), faction:gv('f-faction'), universe:gv('f-universe'), role:gv('f-role'), attitude:gv('f-attitude'), notes:gv('f-notes') };
-    if (type === 'creature') return { name:gv('f-name'), universe:gv('f-universe'), threat:gv('f-threat'), hp:gv('f-hp'), armor:gv('f-armor'), damage:gv('f-damage'), abilities:gv('f-abilities') };
-    if (type === 'location') return { name:gv('f-name'), universe:gv('f-universe'), status:gv('f-status'), description:gv('f-description'), connections:gv('f-connections') };
-    if (type === 'session') return { num:+gv('f-num'), date:gv('f-date'), title:gv('f-title'), summary:gv('f-summary'), npcs_met:gv('f-npcs_met'), locations:gv('f-locations') };
+    if (type === 'npc') return { name:getVal('f-name'), faction:getVal('f-faction'), universe:getVal('f-universe'), role:getVal('f-role'), attitude:getVal('f-attitude'), notes:getVal('f-notes') };
+    if (type === 'creature') return { name:getVal('f-name'), universe:getVal('f-universe'), threat:getVal('f-threat'), hp:getVal('f-hp'), armor:getVal('f-armor'), damage:getVal('f-damage'), abilities:getVal('f-abilities') };
+    if (type === 'location') return { name:getVal('f-name'), universe:getVal('f-universe'), status:getVal('f-status'), description:getVal('f-description'), connections:getVal('f-connections') };
+    if (type === 'session') return { num:+getVal('f-num'), date:getVal('f-date'), title:getVal('f-title'), summary:getVal('f-summary'), npcs_met:getVal('f-npcs_met'), locations:getVal('f-locations') };
     return {};
   }
 };

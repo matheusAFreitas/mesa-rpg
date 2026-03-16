@@ -16,7 +16,7 @@ const Combat = {
     }
     el.innerHTML = c.list.map((x, i) => {
       const pct = x.hp_max > 0 ? Math.max(0, x.hp / x.hp_max * 100) : 100;
-      const hc = pct > 50 ? 'hp-ok' : pct > 25 ? 'hp-warn' : 'hp-crit';
+      const hpClass = pct > 50 ? 'hp-ok' : pct > 25 ? 'hp-warn' : 'hp-crit';
       const cur = i === c.cur;
       return `<div class="crow ${cur?'active-turn':''} ${x.hp<=0?'dead':''}">
         <span style="width:12px;color:var(--accent);font-size:11px;">${cur?'▶':''}</span>
@@ -29,7 +29,7 @@ const Combat = {
           </div>
         </div>
         <div class="hp-ctrl">
-          <span class="hp-lbl ${hc}">${x.hp}/${x.hp_max||'?'}</span>
+          <span class="hp-lbl ${hpClass}">${x.hp}/${x.hp_max||'?'}</span>
           <input type="number" class="hp-tiny" id="hd-${x.id}" placeholder="±">
           <button class="btn btn-danger btn-sm" onclick="Combat.applyDmg('${x.id}')">Dano</button>
           <button class="btn btn-ok btn-sm" onclick="Combat.applyHeal('${x.id}')">Cura</button>
@@ -119,12 +119,12 @@ const Combat = {
   },
 
   saveFromModal() {
-    const name = gv('f-name');
+    const name = getVal('f-name');
     if (!name) { alert('Nome é obrigatório!'); return; }
     App.db.combat.list.push({
-      id: uid(), name, type: gv('f-type'),
-      init: +gv('f-init') || null,
-      hp: +gv('f-hp') || 10, hp_max: +gv('f-hp_max') || 10, conds: []
+      id: uid(), name, type: getVal('f-type'),
+      init: +getVal('f-init') || null,
+      hp: +getVal('f-hp') || 10, hp_max: +getVal('f-hp_max') || 10, conds: []
     });
     App.save();
     App.closeModal();

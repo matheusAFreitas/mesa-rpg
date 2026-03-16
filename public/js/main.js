@@ -1,30 +1,4 @@
-// ---- HELPERS ----
-function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
-function gv(id) { const el = document.getElementById(id); return el ? el.value : null; }
-function esc(s) {
-  if (s === null || s === undefined) return '';
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-}
-function debounce(fn, ms) {
-  let t;
-  return function(...args) { clearTimeout(t); t = setTimeout(() => fn.apply(this, args), ms); };
-}
-
-function parseStats(s) {
-  if (!s) return {};
-  const out = {};
-  s.split(',').forEach(p => { const [k,v] = (p||'').trim().split(':'); if (k&&v) out[k.trim().toUpperCase()] = v.trim(); });
-  return out;
-}
-
-function hexToRgba(hex, alpha) {
-  hex = hex.replace('#','');
-  if (hex.length === 3) hex = hex.split('').map(c=>c+c).join('');
-  const r = parseInt(hex.slice(0,2),16), g = parseInt(hex.slice(2,4),16), b = parseInt(hex.slice(4,6),16);
-  return `rgba(${r},${g},${b},${alpha})`;
-}
-
-// Default universes seeded on first run
+// Universos padrão — semeados no primeiro uso
 const DEFAULT_UNIVERSES = [
   { id: 'u-doom',  name: 'Doom',              color: '#cc2222' },
   { id: 'u-fo',    name: 'Fallout',            color: '#aaaa22' },
@@ -55,6 +29,7 @@ const App = {
     });
   },
 
+  // ---- Persistência ----
   save() {
     clearTimeout(this._saveTimer);
     this._saveTimer = setTimeout(() => {
@@ -64,6 +39,7 @@ const App = {
     }, 600);
   },
 
+  // ---- Sincronização em tempo real ----
   startSSE() {
     const es = new EventSource('/api/events');
     es.onmessage = async () => {
@@ -88,6 +64,7 @@ const App = {
     };
   },
 
+  // ---- Navegação ----
   setupNav() {
     document.querySelectorAll('.nav-item').forEach(el => {
       el.addEventListener('click', () => {
@@ -102,23 +79,23 @@ const App = {
   },
 
   render(s) {
-    switch(s) {
-      case 'dashboard':   Dashboard.render(); break;
-      case 'pj':          Cards.render('pj'); break;
-      case 'npc':         Cards.render('npc'); break;
-      case 'creature':    Cards.render('creature'); break;
-      case 'location':    Cards.render('location'); break;
-      case 'session':     Sessions.render(); break;
-      case 'combat':      Combat.render(); break;
-      case 'dice':        Dice.setup(); break;
-      case 'map-world':   WorldMap.init(); break;
-      case 'map-dungeon': DungeonMap.init(); break;
-      case 'universes':   Universes.render(); break;
-      case 'requests':    Requests.render(); break;
+    switch (s) {
+      case 'dashboard':   Dashboard.render();        break;
+      case 'pj':          Cards.render('pj');         break;
+      case 'npc':         Cards.render('npc');        break;
+      case 'creature':    Cards.render('creature');   break;
+      case 'location':    Cards.render('location');   break;
+      case 'session':     Sessions.render();          break;
+      case 'combat':      Combat.render();            break;
+      case 'dice':        Dice.setup();               break;
+      case 'map-world':   WorldMap.init();            break;
+      case 'map-dungeon': DungeonMap.init();          break;
+      case 'universes':   Universes.render();         break;
+      case 'requests':    Requests.render();          break;
     }
   },
 
-  // ---- Universe helpers ----
+  // ---- Universos ----
   getUniverseNames() {
     return (this.db.universes || []).map(u => u.name);
   },
@@ -145,7 +122,7 @@ const App = {
     return u ? u.color : '#444';
   },
 
-  // ---- MODAL ----
+  // ---- Modal ----
   _mType: null,
   _mId: null,
   _pendingApprovalId: null,
@@ -211,6 +188,7 @@ const App = {
     this.render(document.querySelector('.nav-item.active').dataset.s);
   },
 
+  // ---- CRUD ----
   deleteItem(type, id) {
     if (!confirm('Remover este item?')) return;
     this.db[type] = this.db[type].filter(x => x.id !== id);
