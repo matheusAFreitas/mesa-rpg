@@ -131,7 +131,9 @@ const Combat = {
   applyDmg(id) {
     const x = App.db.combat.list.find(c => c.id === id);
     if (!x) return;
-    const v = parseInt(document.getElementById('hd-'+id).value) || 0;
+    const el = document.getElementById('hd-'+id);
+    if (!el) return;
+    const v = parseInt(el.value) || 0;
     x.hp = Math.max(0, x.hp - v);
     this._syncHpToPj(x);
     App.save(); this.render();
@@ -140,7 +142,9 @@ const Combat = {
   applyHeal(id) {
     const x = App.db.combat.list.find(c => c.id === id);
     if (!x) return;
-    const v = parseInt(document.getElementById('hd-'+id).value) || 0;
+    const el = document.getElementById('hd-'+id);
+    if (!el) return;
+    const v = parseInt(el.value) || 0;
     x.hp = Math.min(x.hp_max || 999, x.hp + v);
     this._syncHpToPj(x);
     App.save(); this.render();
@@ -166,7 +170,11 @@ const Combat = {
   },
 
   remove(id) {
-    App.db.combat.list = App.db.combat.list.filter(x => x.id !== id);
+    const c = App.db.combat;
+    const idx = c.list.findIndex(x => x.id === id);
+    if (idx < 0) return;
+    c.list.splice(idx, 1);
+    if (c.cur >= c.list.length) c.cur = Math.max(0, c.list.length - 1);
     App.save(); this.render();
   },
 

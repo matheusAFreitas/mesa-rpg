@@ -87,6 +87,13 @@ const Player = {
         this.renderSelector();
       }
     } else {
+      // Restore player session after F5
+      const savedPjId = localStorage.getItem('player-pj-id');
+      if (savedPjId) {
+        const pj = this.db.pj.find(p => p.id === savedPjId);
+        if (pj) { this.enterAs(pj); return; }
+        localStorage.removeItem('player-pj-id');
+      }
       this.renderSelector();
     }
     // SSE — atualiza em tempo real quando o servidor muda
@@ -253,6 +260,7 @@ const Player = {
 
   enterAs(pj) {
     this.pj = pj;
+    localStorage.setItem('player-pj-id', pj.id);
     document.getElementById('screen-select').style.display = 'none';
     document.getElementById('screen-player').classList.add('active');
     document.getElementById('ph-name').textContent = pj.name || '—';
@@ -267,6 +275,7 @@ const Player = {
   logout() {
     this.stopHeartbeat();
     this.pj = null;
+    localStorage.removeItem('player-pj-id');
     document.getElementById('screen-select').style.display = '';
     document.getElementById('screen-player').classList.remove('active');
     this.renderSelector();

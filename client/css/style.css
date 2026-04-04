@@ -1,10 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Share+Tech+Mono&display=swap');
 
 :root {
-  --bg:       #030504;
-  --bg2:      #06100A;
-  --bg3:      #0C1A0D;
-  --border:   #112810;
+  --bg:       #0A1209;
+  --bg2:      #101F12;
+  --bg3:      #172B18;
+  --border:   #1E3D1C;
   --accent:   #3EC96D;
   --accent-lo:#1A6B38;
   --text:     #B8D8B0;

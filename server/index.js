@@ -8,7 +8,8 @@ const BCRYPT_ROUNDS = 10;
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const DB_FILE = path.join(__dirname, 'data', 'db.json');
+const DB_FILE = path.join(__dirname, '..', 'data', 'db.json');
+const CLIENT_DIR = path.join(__dirname, '..', 'client');
 
 const DEFAULT_DB = {
   pj: [], npc: [], creature: [], location: [], session: [],
@@ -58,11 +59,11 @@ function writeDB(data) {
 app.use(express.json({ limit: '10mb' }));
 
 // Named routes before static
-app.get('/',        (req, res) => res.sendFile(path.join(__dirname, 'public', 'landing.html')));
-app.get('/mestre',  (req, res) => res.sendFile(path.join(__dirname, 'public', 'mestre.html')));
-app.get('/jogador', (req, res) => res.sendFile(path.join(__dirname, 'public', 'player.html')));
+app.get('/',        (req, res) => res.sendFile(path.join(CLIENT_DIR, 'landing.html')));
+app.get('/mestre',  (req, res) => res.sendFile(path.join(CLIENT_DIR, 'mestre.html')));
+app.get('/jogador', (req, res) => res.sendFile(path.join(CLIENT_DIR, 'player.html')));
 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(CLIENT_DIR));
 
 // SSE — clientes se inscrevem aqui e recebem "update" sempre que o DB mudar
 app.get('/api/events', (req, res) => {
