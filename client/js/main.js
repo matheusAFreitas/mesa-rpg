@@ -41,8 +41,10 @@ const App = {
 
   // ---- Sincronização em tempo real ----
   startSSE() {
-    const es = new EventSource('/api/events');
-    es.onmessage = async () => {
+    let retryDelay = 1000;
+    const MAX_DELAY = 30000;
+
+    const syncFresh = async () => {
       try {
         const fresh = await Api.load();
         if (JSON.stringify(fresh) === JSON.stringify(this.db)) return;
@@ -103,9 +105,26 @@ const App = {
         console.error('[SSE] Falha ao sincronizar:', err);
       }
     };
-    es.onerror = (err) => {
-      console.warn('[SSE] Conexão perdida, tentando reconectar...', err);
+
+    const connect = () => {
+      const es = new EventSource('/api/events');
+
+      es.onopen = () => {
+        retryDelay = 1000;
+        syncFresh(); // recupera atualizações perdidas durante a queda
+      };
+
+      es.onmessage = syncFresh;
+
+      es.onerror = () => {
+        es.close();
+        console.warn(`[SSE] Conexão perdida. Reconectando em ${retryDelay / 1000}s...`);
+        setTimeout(connect, retryDelay);
+        retryDelay = Math.min(retryDelay * 2, MAX_DELAY);
+      };
     };
+
+    connect();
   },
 
   // ---- Navegação ----

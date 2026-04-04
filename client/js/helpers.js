@@ -91,7 +91,7 @@ const Dialog = {
     document.getElementById('dialog-msg').innerHTML = msg;
     const wrap  = document.getElementById('dialog-input-wrap');
     const input = document.getElementById('dialog-input');
-    wrap.style.display  = '';
+    wrap.style.display  = 'block';
     input.type          = opts.type || 'text';
     input.placeholder   = opts.placeholder || '';
     input.value         = defaultVal != null ? defaultVal : '';
